@@ -50,7 +50,6 @@ more points.
 .decl block_boundaries(block:address,BegAddr:address,EndAddr:address)
 .decl overlapping_instruction(EA:address, EA2: address)
 .decl data_in_code(Begin:address,End:address)
-.output data_in_code
  // The postprocess refines the blocks by merging contiguous blocks
  // that are always executed together
 #include "code_inference_postprocess.dl"
@@ -67,7 +66,6 @@ more points.
 // Basic facts to define fallthrough
 
 .decl may_fallthrough(o:address,d:address)
-.output may_fallthrough
 
 may_fallthrough(From,To):-
     next(From,To),
@@ -77,7 +75,6 @@ may_fallthrough(From,To):-
     !no_return_call(From).
 
 .decl must_fallthrough(o:address,d:address)
-.output must_fallthrough
 
 must_fallthrough(From,To):-
     may_fallthrough(From,To),
@@ -95,7 +92,6 @@ must_fallthrough(From,To):-
 // the address space starts from 0 (and therefore we have many more collisions).
 
 .decl may_have_symbolic_immediate(src:address,dest:address)
-.output may_have_symbolic_immediate
 
 may_have_symbolic_immediate(Src,as(Dest,address)):-
     instruction_immediate_offset(Src,Index,Offset),
@@ -115,7 +111,6 @@ may_have_symbolic_immediate(Src,as(Dest,address)):-
 
 
 .decl invalid(EA:address)
-.output invalid
 
 // if the decoder failed to decode any instruction at EA, EA is invalid
 invalid(EA):-
@@ -145,14 +140,12 @@ invalid(From):-
     ).
 
 .decl possible_ea(EA:address)
-.output possible_ea
 
 possible_ea(EA):-
     instruction(EA,_,_,_,_,_,_,_,_,_),
     !invalid(EA).
 
 .decl basic_target(ea:address)
-.output basic_target
 
 basic_target(Val):-
     (
@@ -185,7 +178,6 @@ basic_target(Val):-
     ).
 
 .decl block_limit(EA:address)
-.output block_limit
 
 block_limit(as(EA,address)):-
     (
@@ -201,7 +193,6 @@ block_limit(as(EA,address)):-
 // likely_ea and possible_target_from are mutually recursive
 
 .decl possible_target_from(dest:address,src:address)
-.output possible_target_from
 
 possible_target_from(Dest,Src):-
     code_in_block_candidate(Src,_),
@@ -253,7 +244,6 @@ code_in_block_candidate(EA,EA):-
 // in case we cannot fallthrough, we skip any nops that we might find
 // and generate a new possible_target once the nops finish
 .decl after_end(EA:address,End:address)
-.output after_end
 
 after_end(Next,End):-
     code_in_block_candidate(End,_),
@@ -284,7 +274,6 @@ possible_target(EA):-
 
 //First remove common tails
 .decl common_tail(EA:address)
-.output common_tail
 
 common_tail(EA):-
     code_in_block_candidate(EA,Block),
@@ -331,7 +320,6 @@ block_candidate_boundaries(Block, BegAddr,EndAddr):-
 
 // auxiliary predicate to detect that there are several candidates that fallthrough into a third candidate block
 .decl multiple_fallthrough_to(Block:address)
-.output multiple_fallthrough_to
 
 multiple_fallthrough_to(Block):-
     may_fallthrough(EA,Block),
@@ -341,7 +329,6 @@ multiple_fallthrough_to(Block):-
     BlockPred != BlockPred2.
 
 .decl instruction_range(EA:address,EA_Instruction:address)
-.output instruction_range
 
 instruction_range(EA2+1,EA2):-
     code_in_block_candidate_refined(EA2,_),
@@ -365,7 +352,6 @@ block_overlap(Block1,Block2):-
 
 
 .decl block_is_overlapping(block:address)
-.output block_is_overlapping
 
 block_is_overlapping(Block):-
     (
@@ -378,7 +364,6 @@ block_is_overlapping(Block):-
 // we do it with heuristics
 ///
 .decl block_total_points(ea_block:address, points:number)
-.output block_total_points
 
 block_total_points(Block,Points):-
     block_is_overlapping(Block),
@@ -429,7 +414,6 @@ discarded_block(Block2):-
 
 // Auxiliary predicates to detect candidate blocks that are padding
 .decl candidate_block_is_not_padding(Block:address)
-.output candidate_block_is_not_padding
 
 candidate_block_is_not_padding(Block):-
     code_in_block_candidate_refined(EA,Block),
@@ -455,10 +439,8 @@ candidate_block_is_padding(Block):-
 .output block_points
 
 .decl transitive_points(type:symbol)
-.output transitive_points
 
 .decl overlap_with_jump_table(block:address)
-.output overlap_with_jump_table
 
 transitive_points("start point").
 transitive_points("code section start").
@@ -731,7 +713,6 @@ block_still_overlap(Block,Block2):-
 
 
 .decl data_in_code_propagate(Current:address,Initial:address,SectionLimit:address)
-.output data_in_code_propagate
 
 data_in_code_propagate(BlockEndAddr,BlockEndAddr,SectionLimit):-
     block_boundaries(_,BlockBegAddr,BlockEndAddr),
@@ -751,7 +732,6 @@ data_in_code(Begin,End+1):-
 
 
 .decl next_block_in_section(Block:address,NextBlock:address)
-.output next_block_in_section
 // Blocks are either contiguous or separated by data segments
 // This assumes there are no remaining overlapping blocks.
 

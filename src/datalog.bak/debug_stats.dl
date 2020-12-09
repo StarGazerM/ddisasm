@@ -1,4 +1,4 @@
-//===- bitmasks.dl -----------------------------------------*- datalog -*-===//
+//===- debug_stats.dl -----------------------------------------*- datalog -*-===//
 //
 //  Copyright (C) 2019 GrammaTech, Inc.
 //
@@ -20,31 +20,39 @@
 //  endorsement should be inferred.
 //
 //===----------------------------------------------------------------------===//
-/**
-This module detects specific kinds of bitmasks and bitmask operations.
 
-*/
+// Predicates for debugging and statistics
+.decl discarded_aligned_pointer(ea:address)
+.output discarded_aligned_pointer
 
-// a low pass mask is a bitmap mask of the form 0^*1^+
-.decl low_pass_mask(Mask:number)
-.output low_pass_mask
+.decl discarded_aligned_pointer_to_text(ea:address)
+.output discarded_aligned_pointer_to_text
 
-low_pass_mask((2^N)-1):-
+.decl unaligned_pointer(ea:address)
+.output unaligned_pointer
+
+discarded_aligned_pointer_to_text(EA):-
+    address_in_data(EA,_),
+    !address_in_data_refined(EA,_),
     arch.pointer_size(Pt_size),
-    N = range(1,8*as(Pt_size,number)).
+    EA % Pt_size = 0.
 
-.decl low_pass_filter(EA:address)
-.output low_pass_filter
+discarded_aligned_pointer(EA):-
+    discarded_data_object(EA,Pt_size,"symbol"),
+    EA % Pt_size = 0.
 
-low_pass_filter(EA):-
+unaligned_pointer(EA):-
+    data_object(EA,Pt_size,"symbol"),
+    EA % Pt_size != 0.
+
+.decl immediate_symbol(ea:address,op_index:operand_index,dest:address)
+.output immediate_symbol
+
+immediate_symbol(EA,Op_index,DestAddr):-
     code(EA),
-    op_immediate_and_reg(EA,"AND",_,_,Imm),
-    low_pass_mask(Imm).
-
-.decl is_xor_reset(EA:address)
-.output is_xor_reset
-
-is_xor_reset(EA):-
-    instruction(EA,_,_,"XOR",Op1,Op2,0,0,_,_),
-    op_regdirect_contains_reg(Op1,Reg),
-    op_regdirect_contains_reg(Op2,Reg).
+    may_have_symbolic_immediate(EA,DestAddr),
+    instruction_get_op(EA,Op_index,Op),
+    !direct_jump(EA,_),
+    !direct_call(EA,_),
+    op_immediate(Op,Dest),
+    DestAddr = as(Dest,address).

@@ -1,6 +1,6 @@
-//===- arch_x64.dl --------------------------------------*- datalog -*-===//
+//===- arch_arm64.dl ----------------------------------------*- datalog -*-===//
 //
-//  Copyright (C) 2019 GrammaTech, Inc.
+//  Copyright (C) 2020 GrammaTech, Inc.
 //
 //  This code is licensed under the GNU Affero General Public License
 //  as published by the Free Software Foundation, either version 3 of
@@ -22,185 +22,122 @@
 //===----------------------------------------------------------------------===//
 
 /**
- * Define a set of predicates to model x86-64 specific instructions
+ * Define a set of predicates to model aarch64 specific instructions
  * and characteristics
  */
 
-.comp X64 {
+.comp ARM64 {
 
 #include "jump_operations.dl"
 #include "interrupt_operations.dl"
 #include "registers.dl"
 
+/* Define all variants of the move operation */
 .decl move_operation(Operation:symbol)
-.output move_operation
 move_operation(Operation) :-
     instruction_get_operation(_, Operation),
     contains("MOV", Operation).
 
-.decl conditional_mov(EA:address)
-.output conditional_mov
+move_operation("MVN").
 
-conditional_mov(EA):-
-    instruction_get_operation(EA,Operation),
-    contains("CMOV",Operation).
-
+/* Find all addresses where a move instruction is used */
 .decl mov(EA:address)
-.output mov
-
 mov(EA):-
     instruction_get_operation(EA,Operation),
     move_operation(Operation).
 
-.decl is_nop(EA:address)
-.output is_nop
+/* Define all variants of a conditional move operation */
+/* CMOV is not used by arm64 */
+.decl conditional_mov(EA:address)
 
+.decl is_nop(EA:address)
 is_nop(EA):-
     instruction_get_operation(EA,"NOP").
 
-is_nop(EA):-
-    instruction(EA,_,_,"XCHG",Op,Op,0,0,_,_),
-    op_regdirect(Op,"AX").
-
 // Returns
 .decl return(n:address)
-.output return
 
 return(EA):-
     return_operation(Operation),
     instruction_get_operation(EA,Operation).
 
 .decl jump(EA:address)
-.output jump
 
 jump(EA):-
     instruction_get_operation(EA,Operation),
-    (
-        jump_operation(Operation);
-        loop_operation(Operation)
-    ).
+    jump_operation(Operation).
 
 .decl op_does_not_read_dest_reg(Operation:symbol)
-.output op_does_not_read_dest_reg
-
-op_does_not_read_dest_reg("LEA").
-op_does_not_read_dest_reg("POP").
-
-
 
 .decl arithmetic_operation(Operation:symbol)
-.output arithmetic_operation
 
 arithmetic_operation("ADD").
 arithmetic_operation("SUB").
-arithmetic_operation("INC").
-arithmetic_operation("DEC").
-arithmetic_operation("IMUL").
-arithmetic_operation("SHL").
+arithmetic_operation("MUL").
+
+arithmetic_operation("LSL").
+arithmetic_operation("LSR").
+arithmetic_operation("ASR").
+arithmetic_operation("ROR").
 
 .decl multiplication_operation(Operation:symbol)
-.output multiplication_operation
 
-multiplication_operation("IMUL").
-multiplication_operation("SHL").
+multiplication_operation("MUL").
+multiplication_operation("LSL").
+
 
 .decl logic_operation(Operation:symbol)
-.output logic_operation
 
 logic_operation("AND").
 logic_operation("XOR").
-logic_operation("OR").
-logic_operation("TEST").
+logic_operation("ORR").
+logic_operation("EON").
+logic_operation("ORN").
+logic_operation("BIC").
 
 .decl read_only_operation(Operation:symbol)
-.output read_only_operation
 
-read_only_operation("TEST").
 read_only_operation("CMP").
+read_only_operation("TST").
 
 .decl write_only_operation(Operation:symbol)
-.output write_only_operation
-
-write_only_operation("POP").
 
 .decl one_op_write(Operation:symbol)
-.output one_op_write
-
-one_op_write("INC").
-one_op_write("DEC").
-one_op_write("POP").
-one_op_write("NOT").
 
 .decl pointer_size(n:unsigned) inline
 
 pointer_size(8).
 
-.decl loop_operation(operation:symbol)
-.output loop_operation
-
-loop_operation("LOOP").
-loop_operation("LOOPE").
-loop_operation("LOOPZ").
-loop_operation("LOOPNE").
-loop_operation("LOOPNZ").
-
-
-
+/* prefixes are not used by arm64 */
 .decl loop_prefix(prefix:symbol)
-.output loop_prefix
-
-loop_prefix("REP").
-loop_prefix("REPE").
-loop_prefix("REPNE").
 
 .decl call_operation(operation:symbol)
-.output call_operation
-
-call_operation("CALL").
+call_operation("BL").
 
 .decl syscall_operation(operation:symbol)
-.output syscall_operation
 
-syscall_operation("SYSCALL").
+syscall_operation("SVC").
 
 .decl return_operation(operation:symbol)
-.output return_operation
 
 return_operation("RET").
 
 .decl halt_operation(operation:symbol)
-.output halt_operation
 
 halt_operation("HLT").
-halt_operation("UD2").
 
 .decl cmp_operation(Operation:symbol)
-.output cmp_operation
 
 cmp_operation("CMP").
-cmp_operation("TEST").
+
 
 // These operations are either special like LEA (does not read memory) or
-// are not decoded correctly from capstone
+// are not decoded corectly from capstone
 // FIXME: review this list when capstone is updated
 .decl operation_size_exception(EA:address,Op_index:operand_index,Size:unsigned)
-.output operation_size_exception
-
-operation_size_exception(EA,Index,8):-
-    instruction_get_operation(EA,"MOVSD"),
-    instruction_get_op(EA,Index,Op),
-    op_indirect(Op,_,_,_,_,_,32).
-
-operation_size_exception(EA,Index,0):-
-    instruction_get_operation(EA,"LEA"),
-    instruction_get_op(EA,Index,Op),
-    op_indirect(Op,_,_,_,_,_,_).
-
-
 
 // arithmetic operation on two source registers
 .decl reg_reg_arithmetic_operation(EA:address,Reg_dest:register,Reg1:register,Reg2:register,Mult:number,Offset:number)
-.output reg_reg_arithmetic_operation
 
 reg_reg_arithmetic_operation(EA,Reg2,Reg2,Reg1,-1,0):-
     instruction(EA,_,_,"SUB",Op1,Op2,0,0,_,_), Op1 != Op2,
@@ -212,35 +149,7 @@ reg_reg_arithmetic_operation(EA,Reg2,Reg1,Reg2,1,0):-
     op_regdirect_contains_reg(Op2,Reg2),
     op_regdirect_contains_reg(Op1,Reg1).
 
-reg_reg_arithmetic_operation(EA,Reg_def,Reg1,Reg2,Mult,Offset):-
-    instruction(EA,_,_,"LEA",Op1,Op2,0,0,_,_),
-    op_regdirect_contains_reg(Op2,Reg_def),
-    op_indirect(Op1,_,Reg1_n,Reg2_n,Mult,Offset,_),
-    arch.track_register(Reg1_n,Reg1),
-    arch.track_register(Reg2_n,Reg2),
-    Reg1 != Reg2.
-
 reg_reg_arithmetic_operation(EA,Reg_def,Reg2,Reg1,1,0):-
     reg_reg_arithmetic_operation(EA,Reg_def,Reg1,Reg2,1,0).
 
 }
-
-
-
-symbolic_operand_attribute(EA,Index,"PltRef"):-
-    symbolic_operand(EA,Index,Dest,_),
-    plt_block(Dest,_).
-
-symbolic_operand_attribute(EA,Index,"GotRelPC"):-
-    symbolic_operand(EA,Index,Dest,_),
-    !moved_label(EA,Index,_,_),
-    got_reference(Dest,_).
-
-symbolic_operand_attribute(EA,Index,"GotRelPC"):-
-    symbolic_operand(EA,Index,Dest,_),
-    got_local_reference(Dest,_).
-
-symbolic_operand_attribute(EA,Index,"TpOff"):-
-    symbolic_operand(EA,Index,Dest,_),
-    tls_segment(Start,End,_),
-    Dest >= Start, Dest < End.

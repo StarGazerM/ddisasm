@@ -68,14 +68,12 @@
 /////////////////////////////////////////////////////////////////////////////////
 // Extract information important for disassembly
 .decl fde_addresses(start:address, end:address)
-.output fde_addresses
 
 fde_addresses(Start,End):-
     fde_entry(_,_,_,Start,End,_).
 
 // The fde addresses restricted to existing blocks
 .decl fde_block_addresses(FdeAddr:address,StartAddr:address,EndAddr:address)
-.output fde_block_addresses
 
 fde_block_addresses(FdeAddr,Start,EndAddr):-
     fde_entry(FdeAddr,_,_,Start,EndAddr,_),
@@ -92,7 +90,6 @@ fde_block_addresses(FdeAddr,Start,EndBlock):-
     block_information(Block,_,EndBlock).
 
 .decl lsda_callsite_addresses(Start:address,End:address,LandingPad:address)
-.output lsda_callsite_addresses
 
 lsda_callsite_addresses(Start,End,LandingPad):-
     lsda_callsite(_,_,Start,_,End,_,LandingPad,_).
@@ -290,13 +287,11 @@ symbol_minus_symbol(InstructionAddr+1,Size-1,Addr+(AdvanceUnsigned*CodeAlignment
 /////////////////////////////////////////////////////////////////
 // Auxiliary predicates for symbols
 .decl special_encoding(Code:unsigned,Name:symbol)
-.output special_encoding
 
 special_encoding(1,"uleb128").
 special_encoding(9,"sleb128").
 
 .decl dwarf_encoding_size(Encoding:unsigned,Size:unsigned)
-.output dwarf_encoding_size
 
 dwarf_encoding_size(2,2).
 dwarf_encoding_size(3,4).
@@ -307,7 +302,6 @@ dwarf_encoding_size(11,4).
 dwarf_encoding_size(12,8).
 
 .decl last_fde(Addr:address)
-.output last_fde
 
 last_fde(Addr):-
     fde_entry(Addr,Length,_, _, _,_),
@@ -318,7 +312,6 @@ last_fde(Addr):-
 // position of the instruction in the fde entry
 
 .decl fde_instruction_pos(FdeAddr:address,Index:unsigned,InstructionAddr:address)
-.output fde_instruction_pos
 
 fde_instruction_pos(FdeAddr,0,InstructionAddr):-
     fde_pointer_locations(FdeAddr,_,_, _,LsdaLocation,LsdaSize),
@@ -329,7 +322,6 @@ fde_instruction_pos(FdeAddr,Index+1,InstructionAddr+Size):-
     fde_instruction(FdeAddr,Index,Size,_,_,_).
 
 .decl last_fde_instruction(FdeAddr:address,Index:unsigned)
-.output last_fde_instruction
 
 last_fde_instruction(FdeAddr,Index+1):-
     fde_instruction(FdeAddr,Index,_,_,_,_),
@@ -337,7 +329,6 @@ last_fde_instruction(FdeAddr,Index+1):-
 
 // location to which the instruction refers
 .decl fde_instruction_ref(FdeAddr:address,Index:unsigned,LocalIndex:unsigned,ReferenceAddr:address)
-.output fde_instruction_ref
 
 // LocalIndex is 3 because the instruction comes after startproc, lsda and personality.
 fde_instruction_ref(FdeAddr,0,3,StartFunction):-
@@ -364,7 +355,6 @@ fde_instruction_ref(FdeAddr,Index+1,0,Addr+(CodeAlignmentFactor*as(Advance,unsig
     ).
 
 .decl endproc_local_index(FdeAddr:address,LocalIndex:unsigned)
-.output endproc_local_index
 
 endproc_local_index(FdeAddr,LocalIndex):-
     fde_entry(FdeAddr,_, _,_,EndAddr,_),
@@ -466,7 +456,6 @@ cfi_directive(Block,Offset,LocalIndex,".cfi_escape",InstructionBytesAddr,Size,0,
 // Auxiliary predicates for cfi directives
 
 .decl cfi_operand_is_register(Insn:symbol,OpNumber:unsigned)
-.output cfi_operand_is_register
 
 cfi_operand_is_register("def_cfa",1).
 cfi_operand_is_register("def_cfa",2). //non-factored
@@ -487,7 +476,6 @@ cfi_operand_is_register("val_offset",1).
 
 
 .decl dwarf_to_cfi(DwarfInsn:symbol,OpNumber:unsigned,CfiInsn:symbol)
-.output dwarf_to_cfi
 
 
 dwarf_to_cfi("def_cfa",2,".cfi_def_cfa").

@@ -31,7 +31,6 @@ and no overapping addresses according to a size of the element.
 
 .decl in_ea(ea:address)
 .decl overlap(ea:address,size:unsigned,Where:address) inline
-.output in_ea
 
 overlap(EA,2,EA-1):-
     data_byte(EA,_),

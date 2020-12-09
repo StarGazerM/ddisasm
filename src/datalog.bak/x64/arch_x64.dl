@@ -33,27 +33,23 @@
 #include "registers.dl"
 
 .decl move_operation(Operation:symbol)
-.output move_operation
 move_operation(Operation) :-
     instruction_get_operation(_, Operation),
     contains("MOV", Operation).
 
 .decl conditional_mov(EA:address)
-.output conditional_mov
 
 conditional_mov(EA):-
     instruction_get_operation(EA,Operation),
     contains("CMOV",Operation).
 
 .decl mov(EA:address)
-.output mov
 
 mov(EA):-
     instruction_get_operation(EA,Operation),
     move_operation(Operation).
 
 .decl is_nop(EA:address)
-.output is_nop
 
 is_nop(EA):-
     instruction_get_operation(EA,"NOP").
@@ -64,14 +60,12 @@ is_nop(EA):-
 
 // Returns
 .decl return(n:address)
-.output return
 
 return(EA):-
     return_operation(Operation),
     instruction_get_operation(EA,Operation).
 
 .decl jump(EA:address)
-.output jump
 
 jump(EA):-
     instruction_get_operation(EA,Operation),
@@ -81,7 +75,6 @@ jump(EA):-
     ).
 
 .decl op_does_not_read_dest_reg(Operation:symbol)
-.output op_does_not_read_dest_reg
 
 op_does_not_read_dest_reg("LEA").
 op_does_not_read_dest_reg("POP").
@@ -89,7 +82,6 @@ op_does_not_read_dest_reg("POP").
 
 
 .decl arithmetic_operation(Operation:symbol)
-.output arithmetic_operation
 
 arithmetic_operation("ADD").
 arithmetic_operation("SUB").
@@ -99,13 +91,11 @@ arithmetic_operation("IMUL").
 arithmetic_operation("SHL").
 
 .decl multiplication_operation(Operation:symbol)
-.output multiplication_operation
 
 multiplication_operation("IMUL").
 multiplication_operation("SHL").
 
 .decl logic_operation(Operation:symbol)
-.output logic_operation
 
 logic_operation("AND").
 logic_operation("XOR").
@@ -113,18 +103,15 @@ logic_operation("OR").
 logic_operation("TEST").
 
 .decl read_only_operation(Operation:symbol)
-.output read_only_operation
 
 read_only_operation("TEST").
 read_only_operation("CMP").
 
 .decl write_only_operation(Operation:symbol)
-.output write_only_operation
 
 write_only_operation("POP").
 
 .decl one_op_write(Operation:symbol)
-.output one_op_write
 
 one_op_write("INC").
 one_op_write("DEC").
@@ -136,7 +123,6 @@ one_op_write("NOT").
 pointer_size(8).
 
 .decl loop_operation(operation:symbol)
-.output loop_operation
 
 loop_operation("LOOP").
 loop_operation("LOOPE").
@@ -147,35 +133,29 @@ loop_operation("LOOPNZ").
 
 
 .decl loop_prefix(prefix:symbol)
-.output loop_prefix
 
 loop_prefix("REP").
 loop_prefix("REPE").
 loop_prefix("REPNE").
 
 .decl call_operation(operation:symbol)
-.output call_operation
 
 call_operation("CALL").
 
 .decl syscall_operation(operation:symbol)
-.output syscall_operation
 
 syscall_operation("SYSCALL").
 
 .decl return_operation(operation:symbol)
-.output return_operation
 
 return_operation("RET").
 
 .decl halt_operation(operation:symbol)
-.output halt_operation
 
 halt_operation("HLT").
 halt_operation("UD2").
 
 .decl cmp_operation(Operation:symbol)
-.output cmp_operation
 
 cmp_operation("CMP").
 cmp_operation("TEST").
@@ -184,7 +164,6 @@ cmp_operation("TEST").
 // are not decoded correctly from capstone
 // FIXME: review this list when capstone is updated
 .decl operation_size_exception(EA:address,Op_index:operand_index,Size:unsigned)
-.output operation_size_exception
 
 operation_size_exception(EA,Index,8):-
     instruction_get_operation(EA,"MOVSD"),
@@ -200,7 +179,6 @@ operation_size_exception(EA,Index,0):-
 
 // arithmetic operation on two source registers
 .decl reg_reg_arithmetic_operation(EA:address,Reg_dest:register,Reg1:register,Reg2:register,Mult:number,Offset:number)
-.output reg_reg_arithmetic_operation
 
 reg_reg_arithmetic_operation(EA,Reg2,Reg2,Reg1,-1,0):-
     instruction(EA,_,_,"SUB",Op1,Op2,0,0,_,_), Op1 != Op2,

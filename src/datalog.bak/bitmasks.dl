@@ -1,4 +1,4 @@
-//===- register_type_analysis.dl ----------------------------*- datalog -*-===//
+//===- bitmasks.dl -----------------------------------------*- datalog -*-===//
 //
 //  Copyright (C) 2019 GrammaTech, Inc.
 //
@@ -20,25 +20,28 @@
 //  endorsement should be inferred.
 //
 //===----------------------------------------------------------------------===//
+/**
+This module detects specific kinds of bitmasks and bitmask operations.
 
-.decl def_register_is_not_base_address(EA:address,Reg:register)
-.output def_register_is_not_base_address
+*/
 
-// register compared with non-symbolic
-def_register_is_not_base_address(EA_def,Reg):-
-    def_used(EA_def,Reg,EA,_),
-    cmp_immediate_to_reg(EA,Reg,Imm_index,_),
-    !symbolic_operand_candidate(EA,Imm_index,_,_).
+// a low pass mask is a bitmap mask of the form 0^*1^+
+.decl low_pass_mask(Mask:number)
 
-// register defined with multiplication operation
-def_register_is_not_base_address(EA_def,Reg):-
-    def_used(EA_def,Reg,_,_),
-    instruction_get_operation(EA_def,Operation),
-    arch.multiplication_operation(Operation).
+low_pass_mask((2^N)-1):-
+    arch.pointer_size(Pt_size),
+    N = range(1,8*as(Pt_size,number)).
 
+.decl low_pass_filter(EA:address)
 
-// register is later multiplied
-def_register_is_not_base_address(EA_def,Reg):-
-    def_used(EA_def,Reg,EA,_),
-    instruction_get_operation(EA,Operation),
-    arch.multiplication_operation(Operation).
+low_pass_filter(EA):-
+    code(EA),
+    op_immediate_and_reg(EA,"AND",_,_,Imm),
+    low_pass_mask(Imm).
+
+.decl is_xor_reset(EA:address)
+
+is_xor_reset(EA):-
+    instruction(EA,_,_,"XOR",Op1,Op2,0,0,_,_),
+    op_regdirect_contains_reg(Op1,Reg),
+    op_regdirect_contains_reg(Op2,Reg).
