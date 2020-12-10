@@ -63,7 +63,7 @@ function_entry(EA):-
     Src < Base+Size.
 
 .decl in_function_initial(Block:address,Function:address)
-.output in_function_initial
+.output  in_function_initial
 
 in_function_initial(Block,Block):-
     function_entry(Block).
@@ -80,7 +80,7 @@ in_function_initial(Block,Begin):-
 // are contiguous and their entry point is at the beginning
 
 .decl not_in_function_initial(Block:address)
-.output not_in_function_initial
+.output  not_in_function_initial
 
 not_in_function_initial(Block):-
     refined_block(Block),

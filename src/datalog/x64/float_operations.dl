@@ -24,7 +24,7 @@
 Define a set of floating point operations
 */
 .decl float_operation(operation:symbol)
-.output float_operation
+.output  float_operation
 
 
 float_operation("MOVSS").

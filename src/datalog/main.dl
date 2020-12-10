@@ -161,7 +161,7 @@ This module:
 .input data_byte
 
 .decl address_in_data(ea:address,value:address)
-.output address_in_data
+.output  address_in_data
 
 .input address_in_data
 
@@ -196,7 +196,7 @@ instruction_get_operation(EA,Operation):-
     instruction(EA,_,_,Operation,_,_,_,_,_,_).
 
 .decl instruction_get_op(ea:address, index:operand_index, operator:operand_code)
-.output instruction_get_op
+.output  instruction_get_op
 
 instruction_get_op(EA,Index,Op):-
     instruction(EA,_,_,_,Op1,Op2,Op3,Op4,_,_),
@@ -215,7 +215,7 @@ instruction_get_op(EA,Index,Op):-
     ).
 
 .decl instruction_get_dest_op(ea:address,index:number,op:operand_code)
-.output instruction_get_dest_op
+.output  instruction_get_dest_op
 
 instruction_get_dest_op(EA,Index,Op):-
     instruction(EA,_,_,Operation,_,Op2,Op3,Op4,_,_),
@@ -241,7 +241,7 @@ instruction_get_dest_op(EA,1,Op):-
     arch.one_op_write(Operation).
 
 .decl instruction_get_src_op(ea:address,Index:operand_index,op:operand_code)
-.output instruction_get_src_op
+.output  instruction_get_src_op
 
 //when the dest is used as a source as well
 instruction_get_src_op(EA,Index,Op2):-
@@ -264,7 +264,7 @@ instruction_get_src_op(EA,Index,Op):-
 /////////////////////////////////////////////////////////////
 
 .decl next(n:address,m:address)
-.output next
+.output  next
 
 next(EA,EA+Size):-
     instruction(EA,Size,_,_,_,_,_,_,_,_).
@@ -283,7 +283,7 @@ pc_relative_operand(EA,Index,as(as(EANext,number)+Offset,address)):-
 .output symbolic_operand_attribute
 
 .decl instruction_has_loop_prefix(EA:address)
-.output instruction_has_loop_prefix
+.output  instruction_has_loop_prefix
 
 instruction_has_loop_prefix(EA):-
     instruction(EA,_,Prefix,_,_,_,_,_,_,_),
@@ -291,7 +291,7 @@ instruction_has_loop_prefix(EA):-
 
 // JUMPS
 .decl unconditional_jump(n:address)
-.output unconditional_jump
+.output  unconditional_jump
 
 unconditional_jump(EA):-
     arch.jump(EA),
@@ -299,7 +299,7 @@ unconditional_jump(EA):-
     arch.unconditional_jump_operation(Operation).
 
 .decl conditional_jump(src:address)
-.output conditional_jump
+.output  conditional_jump
 
 conditional_jump(EA):-
     arch.jump(EA),
@@ -330,6 +330,7 @@ pc_relative_jump(EA,Dest):-
 
 // jump to the address of a register
  .decl reg_jump(src:address,Reg:symbol)
+.output  reg_jump
 
 reg_jump(EA,Reg):-
     arch.jump(EA),
@@ -338,6 +339,7 @@ reg_jump(EA,Reg):-
 
 // indirect jump
  .decl indirect_jump(src:address)
+.output  indirect_jump
 
 indirect_jump(EA):-
     arch.jump(EA),
@@ -375,6 +377,7 @@ reg_call(EA,Reg):-
     op_regdirect(Op1,Reg).
 
  .decl indirect_call(src:address)
+.output  indirect_call
 // .output indirect_call
 
 indirect_call(EA):-
@@ -385,14 +388,14 @@ indirect_call(EA):-
 
 // Returns
 .decl return(n:address)
-.output return
+.output  return
 
 return(EA):-
     arch.return_operation(Operation),
     instruction_get_operation(EA,Operation).
 
 .decl halt(EA:address)
-.output halt
+.output  halt
 
 halt(EA):-
     arch.halt_operation(Operation),
@@ -402,7 +405,7 @@ halt(EA):-
 // Operations to abstract features of instructions
 
 .decl op_indirect_contains_reg(op:operand_code,reg:register)
-.output op_indirect_contains_reg
+.output  op_indirect_contains_reg
 
 // we ignore segment registers
 op_indirect_contains_reg(Op,Reg_uniform):-
@@ -414,7 +417,7 @@ op_indirect_contains_reg(Op,Reg_uniform):-
     arch.track_register(Reg3,Reg_uniform).
 
 .decl op_regdirect_contains_reg(op:operand_code,reg:register)
-.output op_regdirect_contains_reg
+.output  op_regdirect_contains_reg
 
 op_regdirect_contains_reg(Op,Reg_uniform):-
     op_regdirect(Op,Reg),
@@ -423,7 +426,7 @@ op_regdirect_contains_reg(Op,Reg_uniform):-
 
 // The instruction at EA has operation Operation and two operands: a register Reg and an immediate Immediate
 .decl op_immediate_and_reg(EA:address,Operation:symbol,Reg:register,Imm_index:operand_index,Immediate:number)
-.output op_immediate_and_reg
+.output  op_immediate_and_reg
 
 op_immediate_and_reg(EA,Operation,Reg,Imm_index,Immediate):-
     instruction_get_operation(EA,Operation),
@@ -434,7 +437,7 @@ op_immediate_and_reg(EA,Operation,Reg,Imm_index,Immediate):-
 
 // The instruction at EA is a comparison between a register Reg and an immediate Immediate
 .decl cmp_immediate_to_reg(EA:address,Reg:register,Imm_index:operand_index,Immediate:number)
-.output cmp_immediate_to_reg
+.output  cmp_immediate_to_reg
 
 cmp_immediate_to_reg(EA,Reg,Imm_index,Immediate):-
     op_immediate_and_reg(EA,Operation,Reg,Imm_index,Immediate),
@@ -456,7 +459,7 @@ function_symbol(EA,Name):-
     symbol(EA,_,"FUNC",_,_,Name).
 
 .decl defined_symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned,name:symbol)
-.output defined_symbol
+.output  defined_symbol
 
 defined_symbol(EA,Size,Type,Scope,SectIndex,Name):-
     symbol(EA,Size,Type,Scope,SectIndex,Name),
@@ -512,7 +515,7 @@ initialized_data_segment(Begin,End):-
     data_in_code(Begin,End).
 
 .decl data_segment(Begin:address,End:address)
-.output data_segment
+.output  data_segment
 
 data_segment(Begin,Begin+Size):-
     data_section(Section),
@@ -535,7 +538,7 @@ data_segment(Begin,End):-
 //////////////////////////////////////////////////////////////////////////
 // find special functions and symbols
 .decl main_function(ea:address)
-.output main_function
+.output  main_function
 
 .decl inferred_symbol_name(ea:address,name:symbol,scope:symbol)
 .output inferred_symbol_name
@@ -546,10 +549,10 @@ inferred_symbol_name(EA,"main","GLOBAL"):-
 
 .decl no_return_call(EA:address)
 .decl function_pointer_section(Name:symbol)
-.output function_pointer_section
+.output  function_pointer_section
 
 .decl no_return_function(Name:symbol)
-.output no_return_function
+.output  no_return_function
 
 no_return_call(EA):-
     direct_call(EA,Dest),
@@ -557,6 +560,6 @@ no_return_call(EA):-
     no_return_function(Function).
 
 .decl is_padding(EA:address)
-.output is_padding
+.output  is_padding
 is_padding(EA):-
     arch.is_nop(EA).

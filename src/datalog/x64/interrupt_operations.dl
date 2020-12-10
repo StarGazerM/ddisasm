@@ -25,7 +25,7 @@ The set of interrupt operations in x64
 */
 
 .decl interrupt_operation(n:symbol)
-.output interrupt_operation
+.output  interrupt_operation
 
 interrupt_operation("INT").
 interrupt_operation("INTO").

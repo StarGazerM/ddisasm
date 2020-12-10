@@ -25,7 +25,7 @@ The set of printable ascii characters.
 */
 
 .decl printable_char(n:unsigned)
-.output printable_char
+.output  printable_char
 
 printable_char(0x9).
 printable_char(0xA).

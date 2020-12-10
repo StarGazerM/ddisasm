@@ -39,7 +39,7 @@
 .output block_information
 
 .decl refined_block_last_instruction(block:address,EA:address)
-.output refined_block_last_instruction
+.output  refined_block_last_instruction
 
 ////////////////////////////////////////////////////////
 // First we split blocks if there is a symbol pointing to the middle
@@ -47,7 +47,7 @@
 .decl block_needs_splitting_at(EA:address)
 .decl code_in_split_block(ea:address,block:address)
 .decl split_block(block:address)
-.output split_block
+.output  split_block
 
 block_needs_splitting_at(EA):-
     // only these sym exprs should be able to point to the middle of a block.
@@ -81,7 +81,7 @@ code_in_split_block(EA,Block):-
 
 // a block that is not referenced anywhere
 .decl block_needs_merging(block:address)
-.output block_needs_merging
+.output  block_needs_merging
 
 block_needs_merging(Block):-
     split_block(Block),
@@ -130,7 +130,7 @@ block_information(Block,BlockSize,LastEA+InsnSize):-
     BlockSize= LastEA+InsnSize - Block.
 
 .decl next_refined_block_in_section(Block:address, NextBlock:address)
-.output next_refined_block_in_section
+.output  next_refined_block_in_section
 
 next_refined_block_in_section(Block,NextBlock):-
     refined_block(Block),
@@ -164,14 +164,14 @@ padding(EA,Size):-
     Size > 0.
 
 .decl block_has_non_nop(Block:address)
-.output block_has_non_nop
+.output  block_has_non_nop
 
 block_has_non_nop(Block):-
     code_in_refined_block(EA,Block),
     !arch.is_nop(EA).
 
 .decl nop_block(Block:address)
-.output nop_block
+.output  nop_block
 
 nop_block(Block):-
     refined_block(Block),

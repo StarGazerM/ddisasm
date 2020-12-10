@@ -248,7 +248,7 @@ value_reg_edge(EA,Reg,EA_prev,Reg_origin,1,Offset):-
 // This predicate is used to create trivial leaf edges in
 // the value_reg graph.
 .decl value_reg_unsupported(EA:address, Reg:register)
-.output value_reg_unsupported
+.output  value_reg_unsupported
 
 // Load a register from a non-constant memory address
 value_reg_unsupported(EA,Reg):-
@@ -279,7 +279,7 @@ value_reg_unsupported(EA,Reg):-
 // instructions we propagate these values forward
 
 .decl step_limit(Limit:number)
-.output step_limit
+.output  step_limit
 
 step_limit(12).
 

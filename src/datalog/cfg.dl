@@ -37,7 +37,7 @@ This module generates the control flow graph of the disassembled code
 /////////////////////////////////////////////////////////////////////////////////
 // jump table identification
 .decl jump_table(Src:address,Data:address)
-.output jump_table
+.output  jump_table
 
 //use the data access pattern
 jump_table(EA,Initial_memory):-

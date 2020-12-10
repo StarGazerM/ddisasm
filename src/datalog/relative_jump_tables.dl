@@ -65,7 +65,7 @@ data_word(EA,8,Val):-
 
 
 .decl take_address(Src:address,Address_taken:address)
-.output take_address
+.output  take_address
 
 take_address(Src,Address):-
     pc_relative_operand(Src,1,Address),
@@ -85,7 +85,7 @@ of the jump table.
 .output relative_address
 
 .decl relative_address_start(EA:address,Size:unsigned,Reference:address,Dest:address, DestIsFirstOrSecond:symbol)
-.output relative_address_start
+.output  relative_address_start
 
 relative_address_start(EA,Size,EA,Dest,DestIsFirstOrSecond):-
     take_address(_,EA),
@@ -126,7 +126,7 @@ relative_address(EA+Size,Size,TableStart,Ref,Dest,DestIsFirstOrSecond):-
 
 // auxiliary predicate for detecting accessing an element of a jump table.
 .decl jump_table_element_access(EA:address,Size:unsigned,TableStart:address)
-.output jump_table_element_access
+.output  jump_table_element_access
 
 jump_table_element_access(EA,Size,TableStartAddr):-
     data_access(EA,_,"NONE","NONE",RegIndex,as(Size,number),TableStart,Size),

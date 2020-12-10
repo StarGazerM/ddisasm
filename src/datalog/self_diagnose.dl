@@ -3,7 +3,7 @@
 .output false_negative
 .output false_positive
 .decl relocation_in_operand(EA:address,Index:operand_index,Rel:address,InsnOffset:unsigned)
-.output relocation_in_operand
+.output  relocation_in_operand
 
 
 relocation_in_operand(EA,Index,Location,Offset):-
@@ -20,7 +20,7 @@ relocation_in_operand(EA,Index,Location,Offset):-
 
 
 .decl trivial_relocation(EA:address)
-.output trivial_relocation
+.output  trivial_relocation
 
 trivial_relocation(EA):-
     relocation(EA,_,Symbol,0),
@@ -112,7 +112,7 @@ false_positive(Location):-
     Location=EA+Offset.
 
 .decl zero_relocation(EA:address)
-.output zero_relocation
+.output  zero_relocation
 
 zero_relocation(EA):-
     relocation(EA,_,_,_),
