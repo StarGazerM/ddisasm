@@ -472,11 +472,17 @@ defined_symbol(EA,Size,Type,Scope,SectIndex,Name):-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 .decl section(name:symbol,size:unsigned,addr:address)
+.output  section
 .decl data_section(name:symbol)
+.output  data_section
 .decl exception_section(name:symbol)
+.output  exception_section
 .decl special_data_section(name:symbol)
+.output  special_data_section
 .decl regular_data_section(name:symbol)
+.output  regular_data_section
 .decl code_section(name:symbol)
+.output  code_section
 .decl tls_section(name:symbol)
 .output tls_section
 .decl bss_section(name:symbol)
@@ -548,6 +554,7 @@ inferred_symbol_name(EA,"main","GLOBAL"):-
     main_function(EA).
 
 .decl no_return_call(EA:address)
+.output  no_return_call
 .decl function_pointer_section(Name:symbol)
 .output  function_pointer_section
 

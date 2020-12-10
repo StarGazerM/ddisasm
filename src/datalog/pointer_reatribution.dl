@@ -309,6 +309,7 @@ moved_label(EA,Op_index,Dest,NewDest):-
 
 
 .decl mov_immediate_to_reg(EA:address,Reg:register,Imm_index:operand_index,Immediate:number)
+.output  mov_immediate_to_reg
 .decl cmp_reg_to_reg(EA:address,Reg1:register,Reg2:register)
 .output  cmp_reg_to_reg
 

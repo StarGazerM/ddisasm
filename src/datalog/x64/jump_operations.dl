@@ -24,10 +24,12 @@
 The set of jump operations in x64
 */
 .decl jump_operation(n:symbol)
+.output  jump_operation
 .decl unconditional_jump_operation(n:symbol)
 .output  unconditional_jump_operation
 
 .decl jump_equal_operation(n:symbol)
+.output  jump_equal_operation
 .decl jump_unequal_operation(n:symbol)
 .output  jump_unequal_operation
 

@@ -27,6 +27,7 @@ class DatalogLib:
         # map from comp name to list of rule decl
         self.comp_decls = {}
         self.inits = []
+        self.inlines = []
     
     def add_dir(self, filedir, recurisve=False):
         entries = os.listdir(filedir)
@@ -46,26 +47,14 @@ class DatalogLib:
             comp_name = None
             comp_rules = []
             for line in lines:
-                # find comp
-                if line.strip().startswith(".comp"):
-                    comp_name = get_comp_name(line)
-                if line.strip().endswith("}"):
-                    self.comp_decls[comp_name] = comp_rules
-                    comp_rules = []
-                    comp_name = None
-                # find decl
-                if line.strip().startswith(".decl"):
-                    if line.find("inline") == -1:
-                        need_insert_name = get_rule_name(line)
-                        current_rule = line
-                    newlines.append(line)
-                    continue
+                # check if a rule is complete
                 if need_insert_name is not None:
                     # check if current position is still in decl body
-                    if (line.find(":") != -1) and (line.find(":-") == -1):
+                    if (line.find(":") != -1) and (line.find(":-") == -1) and (line.find(".decl") == -1):
                         current_rule = current_rule + line
                     # already there
                     elif line.strip().startswith(".output") or line.startswith(".input"):
+                        self.rule_decls.append(current_rule)
                         need_insert_name = None
                     else:
                         newlines.append(".output "+need_insert_name+"\n")
@@ -81,8 +70,26 @@ class DatalogLib:
                     self.type_decls.append(line)
                 if line.strip().startswith(".init"):
                     self.inits.append(line)
+                # find comp
+                if line.strip().startswith(".comp"):
+                    comp_name = get_comp_name(line)
+                if line.strip().endswith("}"):
+                    self.comp_decls[comp_name] = comp_rules
+                    comp_rules = []
+                    comp_name = None
+                # find decl
+                if line.strip().startswith(".decl"):
+                    # handle inlines else where
+                    if line.find("inline") == -1:
+                        need_insert_name = get_rule_name(line)
+                        current_rule = line
                 newlines.append(line)
             self.file_data[filename] = "".join(newlines)
+            # # find all inlines def
+            # inline_decls = re.findall(r"\.decl .+ inline", self.file_data[filename])
+            # for i_decl in inline_decls:
+            #     i_name = get_rule_name(i_decl)
+
 
     def rewrite_rule(self):
         if self.override:

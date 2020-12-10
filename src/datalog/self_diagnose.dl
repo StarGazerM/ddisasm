@@ -1,4 +1,5 @@
 .decl false_negative(EA:address)
+.output  false_negative
 .decl false_positive(EA:address)
 .output false_negative
 .output false_positive

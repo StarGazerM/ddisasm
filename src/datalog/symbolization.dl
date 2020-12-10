@@ -105,6 +105,7 @@ This module also computes and symbol_minus_symbol.
 // candidates of symbolic values in the code
 
 .decl symbolic_operand_candidate(ea:address,operand_index:operand_index,Dest:address,Type:symbol)
+.output  symbolic_operand_candidate
 .decl symbolic_operand_point(ea:address,operand_index:operand_index,points:number,why:symbol)
 .output symbolic_operand_point
 .decl symbolic_operand_total_points(ea:address,operand_index:operand_index,points:number)
