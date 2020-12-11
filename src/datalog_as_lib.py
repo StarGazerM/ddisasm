@@ -90,7 +90,6 @@ class DatalogLib:
             # for i_decl in inline_decls:
             #     i_name = get_rule_name(i_decl)
 
-
     def rewrite_rule(self):
         if self.override:
             for fname,data in self.file_data.items():
