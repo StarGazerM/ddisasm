@@ -27,11 +27,14 @@ Function inference based on call frames.
 .comp basic_function_inference{
 
 .decl function_entry(Block:address)
+.output  function_entry
 .output function_entry
 .decl in_function(Block:address,Function:address)
+.output  in_function
 .output in_function
 
 .decl function_without_callframe(Block:address)
+.output  function_without_callframe
 .output function_without_callframe
 
 function_entry(Begin):-

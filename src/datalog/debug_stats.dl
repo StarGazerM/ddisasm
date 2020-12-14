@@ -23,12 +23,15 @@
 
 // Predicates for debugging and statistics
 .decl discarded_aligned_pointer(ea:address)
+.output  discarded_aligned_pointer
 .output discarded_aligned_pointer
 
 .decl discarded_aligned_pointer_to_text(ea:address)
+.output  discarded_aligned_pointer_to_text
 .output discarded_aligned_pointer_to_text
 
 .decl unaligned_pointer(ea:address)
+.output  unaligned_pointer
 .output unaligned_pointer
 
 discarded_aligned_pointer_to_text(EA):-
@@ -46,6 +49,7 @@ unaligned_pointer(EA):-
     EA % Pt_size != 0.
 
 .decl immediate_symbol(ea:address,op_index:operand_index,dest:address)
+.output  immediate_symbol
 .output immediate_symbol
 
 immediate_symbol(EA,Op_index,DestAddr):-

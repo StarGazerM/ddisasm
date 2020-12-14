@@ -12,6 +12,12 @@
 .input  in_ea
 }
 .comp  basic_function_inference {
+.decl function_entry(Block:address)
+.input  function_entry
+.decl in_function(Block:address,Function:address)
+.input  in_function
+.decl function_without_callframe(Block:address)
+.input  function_without_callframe
 .decl in_function_initial(Block:address,Function:address)
 .input  in_function_initial
 .decl not_in_function_initial(Block:address)
@@ -526,12 +532,6 @@
 .input  propagated_data_access
 .decl data_access_pattern_non_zero(Address:address,Size:unsigned,Multiplier:number,FromWhere:address)
 .input  data_access_pattern_non_zero
-.decl function_entry(Block:address)
-.input  function_entry
-.decl in_function(Block:address,Function:address)
-.input  in_function
-.decl function_without_callframe(Block:address)
-.input  function_without_callframe
 .decl elf_section_flag(Name:symbol,Position:unsigned)
 .input  elf_section_flag
 .decl elf_section_type(Name:symbol,Code:unsigned)

@@ -122,12 +122,15 @@ value_reg_at_operand(EA,Op_index,Reg,0,0,0,"complete"):-
     Reg="NONE".
 
 .decl data_access_pattern(Address:address,Size:unsigned,Multiplier:number,FromWhere:address)
+.output  data_access_pattern
 .output data_access_pattern
 
 .decl data_access_pattern_candidate(Address:address,Size:unsigned,Multiplier:number,FromWhere:address)
+.output  data_access_pattern_candidate
 .output data_access_pattern_candidate
 
 .decl preferred_data_access(ea:address,ea_data_access:address)
+.output  preferred_data_access
 .output preferred_data_access
 
 //////////////////////////////////////////////////

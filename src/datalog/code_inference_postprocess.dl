@@ -30,12 +30,15 @@
 */
 
 .decl code_in_refined_block(ea:address,block:address)
+.output  code_in_refined_block
 .output code_in_refined_block
 
 .decl refined_block(block:address)
+.output  refined_block
 .output refined_block
 
 .decl block_information(block:address,size:unsigned,endAddress:address)
+.output  block_information
 .output block_information
 
 .decl refined_block_last_instruction(block:address,EA:address)
@@ -149,6 +152,7 @@ next_refined_block_in_section(PrevBlock,Block):-
 // Compute padding regions
 
 .decl padding(EA:address,Size:unsigned)
+.output  padding
 .output padding
 
 // blocks with only nops are padding

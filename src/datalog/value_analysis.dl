@@ -57,12 +57,15 @@ or loop) and considering the value with most steps.
 */
 .decl value_reg_edge(EA:address,Reg:register,
                 EA_reg1:address,Reg1:register,Multiplier:number,Offset:number)
+.output  value_reg_edge
 .output value_reg_edge
 .decl value_reg(EA:address,Reg:register,
                 EA_reg1:address,Reg1:register,Multiplier:number,Offset:number,steps:number)
+.output  value_reg
 .output value_reg
 
 .decl best_value_reg(EA:address,Reg:register,EA_from:address,Multiplier:number,Offset:number,type:symbol)
+.output  best_value_reg
 .output best_value_reg
 
 // mov reg immediate
@@ -72,6 +75,7 @@ value_reg_edge(EA,Reg,EA,"NONE",0,Immediate):-
     op_immediate_and_reg(EA,Operation,Reg,_,Immediate).
 
 .decl reg_stored_in_stack(EA:address,Reg:register,StackPos:number, StackFrameDefinedAt: address)
+.output  reg_stored_in_stack
 .output reg_stored_in_stack
 
 reg_stored_in_stack(EA,Reg,StackPos,StackFrameDefinedAt):-
@@ -84,6 +88,7 @@ reg_stored_in_stack(EA,Reg,StackPos,StackFrameDefinedAt):-
 
 
 .decl reg_loaded_from_stack(EA:address,Reg:register,StackPos:number, StackFrameDefinedAt: address)
+.output  reg_loaded_from_stack
 .output reg_loaded_from_stack
 
 reg_loaded_from_stack(EA,Reg,StackPos,StackFrameDefinedAt):-

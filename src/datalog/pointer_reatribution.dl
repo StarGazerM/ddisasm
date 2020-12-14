@@ -53,13 +53,16 @@ compute an address but this is also no enough.
 */
 
 .decl moved_data_label(EA:address,Size:unsigned,Dest:address,NewDest:address)
+.output  moved_data_label
 .output moved_data_label
 
 .decl moved_label(EA:address,Index:operand_index,Val:address,New_val:address)
+.output  moved_label
 .output moved_label
 
 // this predicate is just for debugging purposes
 .decl moved_label_class(EA:address,Index:operand_index,Reason:symbol)
+.output  moved_label_class
 .output moved_label_class
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +188,7 @@ moved_displacement_candidate(EA,Op_index,Dest,NewDest,Diff):-
     ).
 
 .decl moved_displacement_candidate(EA:address,Op_index:operand_index,Dest:address,NewDest:address,Priority:unsigned)
+.output  moved_displacement_candidate
 .output moved_displacement_candidate
 
 moved_label_class(EA,Op_index,"miss section with access"),
@@ -335,6 +339,7 @@ cmp_reg_to_reg(EA,Reg1,Reg2):-
 
 .decl dest_enlarged_data_section(EA:address,Reg:register,NewDest:address,
             Beg:address,End:address,OldBeg:address,OldEnd:address)
+.output  dest_enlarged_data_section
 .output dest_enlarged_data_section
 
 dest_enlarged_data_section(EA_def,Reg,NewDestAddr,Beg-MultAbs,Beg+SizeSect+MultAbs,Beg,Beg+SizeSect):-

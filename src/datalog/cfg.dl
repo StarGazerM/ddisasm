@@ -25,13 +25,16 @@ This module generates the control flow graph of the disassembled code
 */
 
 .decl cfg_edge(src:address,dest:address,conditional:symbol,indirect:symbol,type:symbol)
+.output  cfg_edge
 .output cfg_edge
 
 // edges whose destination we do not know
 .decl cfg_edge_to_top(src:address,conditional:symbol,type:symbol)
+.output  cfg_edge_to_top
 .output cfg_edge_to_top
 
 .decl cfg_edge_to_symbol(src:address,symbol:symbol)
+.output  cfg_edge_to_symbol
 .output cfg_edge_to_symbol
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +85,7 @@ jump_table(EA,Memory+Pt_size):-
 
 // Resolve easy jumps that access a straightforward jump table
 .decl resolved_jump(Src:address,Dest:address)
+.output  resolved_jump
 .output resolved_jump
 
 resolved_jump(EA,Dest):-

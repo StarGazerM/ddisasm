@@ -41,6 +41,7 @@ class DatalogLib:
     def add_file(self, filename):
         with open(filename, "r+") as f:
             lines = list(f)
+            full_text = "".join(lines)
             newlines = []
             need_insert_name = None
             current_rule = ""
@@ -53,7 +54,7 @@ class DatalogLib:
                     if (line.find(":") != -1) and (line.find(":-") == -1) and (line.find(".decl") == -1):
                         current_rule = current_rule + line
                     # already there
-                    elif line.strip().startswith(".output") or line.startswith(".input"):
+                    elif full_text.find('.output {}'.format(need_insert_name)) != -1:
                         self.rule_decls.append(current_rule)
                         need_insert_name = None
                     else:
@@ -89,6 +90,7 @@ class DatalogLib:
             # inline_decls = re.findall(r"\.decl .+ inline", self.file_data[filename])
             # for i_decl in inline_decls:
             #     i_name = get_rule_name(i_decl)
+
 
     def rewrite_rule(self):
         if self.override:

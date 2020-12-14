@@ -103,27 +103,35 @@ This module:
 
 // metadata
 .decl entry_point(ea:address)
+.output  entry_point
 .input entry_point
 
 .decl symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned,name:symbol)
+.output  symbol
 .input symbol
 
 .decl section_complete(name:symbol,size:unsigned,addr:address,type:unsigned,flags:unsigned,align:unsigned)
+.output  section_complete
 .input section_complete
 
 .decl relocation(ea:address,type:symbol,name:symbol,addend:number)
+.output  relocation
 .input relocation
 
 .decl binary_type(Type:symbol)
+.output  binary_type
 .input binary_type
 
 .decl binary_format(Format:symbol)
+.output  binary_format
 .input binary_format
 
 .decl binary_isa(isa:symbol)
+.output  binary_isa
 .input binary_isa
 
 .decl option(Option:symbol)
+.output  option
 .input option
 
 
@@ -132,32 +140,40 @@ This module:
 .decl instruction(ea:address, size:unsigned, prefix:symbol, opcode:symbol,
           op1:operand_code, op2:operand_code, op3:operand_code, op4:operand_code,
           immOffset:unsigned,displacementOffset:unsigned)
+.output  instruction
 .input instruction
 
 .decl invalid_op_code(ea:address)
+.output  invalid_op_code
 .input invalid_op_code
 
 // three kinds of operators
 .decl op_regdirect(code:operand_code,register_name:register)
+.output  op_regdirect
 .input op_regdirect
 
 .decl op_immediate(code:operand_code,offset:number)
+.output  op_immediate
 .input op_immediate
 
 .decl op_prefetch(code:operand_code, prefetch_type:symbol)
+.output  op_prefetch
 .input op_prefetch
 .output op_prefetch
 
 .decl op_barrier(code:operand_code, prefetch_type:symbol)
+.output  op_barrier
 .input op_barrier
 .output op_barrier
 
 .decl op_indirect(code:operand_code,reg1:register, reg2:register, reg3:register,
         multiplier:number, offset:number, size_value:unsigned)
+.output  op_indirect
 .input op_indirect
 
 // data from sections
 .decl data_byte(ea:address,value:unsigned)
+.output  data_byte
 .input data_byte
 
 .decl address_in_data(ea:address,value:address)
@@ -175,6 +191,7 @@ This module:
 /////////////////////////////////////////////////////////////
 
 .decl instruction_immediate_offset(EA:address,Index:operand_index,Offset:unsigned)
+.output  instruction_immediate_offset
 .output instruction_immediate_offset
 
 instruction_immediate_offset(EA,Index,ImmediateOffset):-
@@ -183,6 +200,7 @@ instruction_immediate_offset(EA,Index,ImmediateOffset):-
     op_immediate(Op,_).
 
 .decl instruction_displacement_offset(EA:address,Index:operand_index,Offset:unsigned)
+.output  instruction_displacement_offset
 .output instruction_displacement_offset
 
 instruction_displacement_offset(EA,Index,DisplacementOffset):-
@@ -270,6 +288,7 @@ next(EA,EA+Size):-
     instruction(EA,Size,_,_,_,_,_,_,_,_).
 
 .decl pc_relative_operand(src:address,index:operand_index, dest:address)
+.output  pc_relative_operand
 .output pc_relative_operand
 
 pc_relative_operand(EA,Index,as(as(EANext,number)+Offset,address)):-
@@ -280,6 +299,7 @@ pc_relative_operand(EA,Index,as(as(EANext,number)+Offset,address)):-
     next(EA,EANext).
 
 .decl symbolic_operand_attribute(ea:address,index:unsigned,attribute:symbol)
+.output  symbolic_operand_attribute
 .output symbolic_operand_attribute
 
 .decl instruction_has_loop_prefix(EA:address)
@@ -309,6 +329,7 @@ conditional_jump(EA):-
 
 // direct jumps
 .decl direct_jump(src:address, dest:address)
+.output  direct_jump
 .output direct_jump
 
 direct_jump(EA,as(Dest,address)):-
@@ -322,6 +343,7 @@ direct_jump(EA,EA):-
 // Special kinds of indirect jumps
 // PC relative jumps
 .decl pc_relative_jump(src:address, dest:address)
+.output  pc_relative_jump
 .output pc_relative_jump
 
 pc_relative_jump(EA,Dest):-
@@ -350,6 +372,7 @@ indirect_jump(EA):-
 // CALLS
 // direct calls
 .decl direct_call(src:address, dest:address)
+.output  direct_call
 .output direct_call
 
 direct_call(EA,as(Dest,address)):-
@@ -359,6 +382,7 @@ direct_call(EA,as(Dest,address)):-
 
 
 .decl pc_relative_call(src:address,dest:address)
+.output  pc_relative_call
 .output pc_relative_call
 
 pc_relative_call(Src,Dest):-
@@ -369,6 +393,7 @@ pc_relative_call(Src,Dest):-
 
 // for now we do not compute anything about these
 .decl reg_call(src:address,reg:register)
+.output  reg_call
 .output reg_call
 
 reg_call(EA,Reg):-
@@ -445,6 +470,7 @@ cmp_immediate_to_reg(EA,Reg,Imm_index,Immediate):-
 
 /////////////////////////////////////////////////////////////////////////////////
 .decl ambiguous_symbol(name:symbol)
+.output  ambiguous_symbol
 .output ambiguous_symbol
 
 ambiguous_symbol(Name):-
@@ -453,6 +479,7 @@ ambiguous_symbol(Name):-
 
 // Function symbols
 .decl function_symbol(ea:address,name:symbol)
+.output  function_symbol
 .output function_symbol
 
 function_symbol(EA,Name):-
@@ -484,8 +511,10 @@ defined_symbol(EA,Size,Type,Scope,SectIndex,Name):-
 .decl code_section(name:symbol)
 .output  code_section
 .decl tls_section(name:symbol)
+.output  tls_section
 .output tls_section
 .decl bss_section(name:symbol)
+.output  bss_section
 .output bss_section
 
 regular_data_section(Name):-
@@ -493,9 +522,11 @@ regular_data_section(Name):-
     !special_data_section(Name).
 
 .decl non_zero_data_section(name:symbol)
+.output  non_zero_data_section
 .output non_zero_data_section
 
 .decl bss_section_limits(Begin:address,End:address)
+.output  bss_section_limits
 .output bss_section_limits
 
 bss_section_limits(0,0):-
@@ -511,6 +542,7 @@ data segments can be data sections or fragments of the code section that
 contain data instead of code.
 */
 .decl initialized_data_segment(Begin:address,End:address)
+.output  initialized_data_segment
 .output initialized_data_segment
 
 initialized_data_segment(Begin,Begin+Size):-
@@ -533,12 +565,15 @@ data_segment(Begin,End):-
 ////////////////////////////////////////////////////////////////////////////
 // detect references  to libraries (calls to plt)
 .decl plt_block(block:address,function:symbol)
+.output  plt_block
 .output plt_block
 
 .decl got_reference(Got_entry:address,Symbol:symbol)
+.output  got_reference
 .output got_reference
 
 .decl got_local_reference(Got_entry:address,Dest:address)
+.output  got_local_reference
 .output got_local_reference
 
 //////////////////////////////////////////////////////////////////////////
@@ -547,6 +582,7 @@ data_segment(Begin,End):-
 .output  main_function
 
 .decl inferred_symbol_name(ea:address,name:symbol,scope:symbol)
+.output  inferred_symbol_name
 .output inferred_symbol_name
 
 inferred_symbol_name(EA,"main","GLOBAL"):-

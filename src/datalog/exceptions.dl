@@ -22,47 +22,59 @@
 //===----------------------------------------------------------------------===//
 
 .decl cie_entry(addr: address, length:unsigned,codeAlignmentFactor:unsigned,DataAlignmentFactor:number)
+.output  cie_entry
 .input cie_entry
 
 .decl cie_encoding(addr: address, FdeEncoding:unsigned, LsdaEncoding:unsigned)
+.output  cie_encoding
 .input cie_encoding
 
 .decl cie_personality(addr:address,Personality:address,PersonalityPos:address,PersonalitySize:unsigned,Encoding:unsigned)
+.output  cie_personality
 .input cie_personality
 
 .decl fde_entry(addr: address,length:unsigned,cie:address, start:address, end:address,lsda:address)
+.output  fde_entry
 .input fde_entry
 
 .decl fde_pointer_locations(addr:address,startLocation:address,endLocation:address,
                             endSize:unsigned,lsdaLocation:address,lsdaSize:unsigned)
+.output  fde_pointer_locations
 .input fde_pointer_locations
 
 .decl fde_instruction(addr:address,index:unsigned,size:unsigned,insn:symbol,op1:number,op2:number)
+.output  fde_instruction
 .input fde_instruction
 
 .decl lsda(lsdaAddress:address,callsiteTable:address,callsiteTableEncoding:unsigned,callSiteTableLength:unsigned,
            typeTable:address, typeTableEncoding:unsigned, landingPadBaseAddress: address)
+.output  lsda
 .input lsda
 
 .decl lsda_pointer_locations(lsdaAddress:address,typeTablePointerLocation:address,callsiteTablePointerLoc:address)
+.output  lsda_pointer_locations
 .input lsda_pointer_locations
 
 .decl lsda_callsite(CallSiteTable_address:address,EA_start:address, start:address,
     EA_end:address,end:address,
     EA_landingPad:address,landingPad:address,EA_endLandindPad:address)
+.output  lsda_callsite
 .input lsda_callsite
 
 .decl lsda_type_entry(lsdaTypeTableAddress:address, index:unsigned,address:address)
+.output  lsda_type_entry
 .input lsda_type_entry
 /////////////////////////////////////////////////////////////////////////////////
 // output predicates
 
 .decl cfi_directive(BlockAddress:address,Offset:unsigned,LocalIndex:unsigned,
                     directive:symbol,Reference:address, Nargs:unsigned,arg1:number,arg2:number)
+.output  cfi_directive
 .output cfi_directive
 
 // symbol_special_encoding marks symbols that are encoded with uleb128 or sleb128.
 .decl symbol_special_encoding(EA:address,encoding:symbol)
+.output  symbol_special_encoding
 .output symbol_special_encoding
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,7 @@ This module deals exclusively with detecting jump tables with relative addresses
 
 
 .decl data_word(EA:address,Size:unsigned,Val:number)
+.output  data_word
 .output data_word
 
 data_word(EA,2,Val):-
@@ -82,6 +83,7 @@ In these jump tables, the reference address coincides with the starting address
 of the jump table.
 */
 .decl relative_address(EA:address,Size:unsigned,TableStart:address,Reference:address,Dest:address,DestIsFirstOrSecond:symbol)
+.output  relative_address
 .output relative_address
 
 .decl relative_address_start(EA:address,Size:unsigned,Reference:address,Dest:address, DestIsFirstOrSecond:symbol)
@@ -168,6 +170,7 @@ jump_table_element_access(EA,Size,TableStartAddr):-
 
 
 .decl jump_table_start(EA_jump:address,Size:unsigned,TableStart:address,TableRef:address,Operation:symbol)
+.output  jump_table_start
 .output jump_table_start
 
 //  mov REG, Size [REG*Size+TableStart] or mov REG, Size [REG*Size+ RegBase] where RegBase = TableStart

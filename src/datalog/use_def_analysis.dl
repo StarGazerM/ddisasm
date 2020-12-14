@@ -48,6 +48,7 @@ The traversal of used_for_address is kept intra-procedural (not following call e
 
 //The 'reg' is defined in 'ea_def' and used in 'ea_used' in the operand with index 'index_used'
 .decl def_used(ea_def:address,reg:register,ea_used:address,index_used:operand_index)
+.output  def_used
 .output def_used
 
 // a register is implicitly defined by being compared to a constant and then jumping

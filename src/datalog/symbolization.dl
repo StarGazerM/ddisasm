@@ -63,19 +63,24 @@ This module also computes and symbol_minus_symbol.
 #include "register_type_analysis.dl"
 
 .decl symbolic_operand(ea:address,index:operand_index,value:address,type:symbol)
+.output  symbolic_operand
 .output symbolic_operand
 
 .decl symbolic_data(ea:address,size:unsigned,value:address)
+.output  symbolic_data
 .output symbolic_data
 
 // Symbolic expression generated from relocations
 .decl symbolic_expr_from_relocation(ea:address,size:unsigned,symbol:symbol,Addend:number)
+.output  symbolic_expr_from_relocation
 .output symbolic_expr_from_relocation
 
 .decl symbol_minus_symbol_jump_table(EA:address,TableStart:address,Size:unsigned,Symbol1:address,Symbol2:address,Reference:symbol,Scale:unsigned)
+.output  symbol_minus_symbol_jump_table
 .output symbol_minus_symbol_jump_table
 
 .decl symbol_minus_symbol(ea:address,size:unsigned,symbol1:address,symbol2:address,scale:unsigned)
+.output  symbol_minus_symbol
 .output symbol_minus_symbol
 
 // symbolic data that points to code
@@ -84,14 +89,17 @@ This module also computes and symbol_minus_symbol.
 
 // data that is dereferenced somewhere in the code
 .decl labeled_data(ea:address)
+.output  labeled_data
 .output labeled_data
 
 // How data sections are divided into elements by labels or data objects
 .decl data_object_boundary(EA:address)
+.output  data_object_boundary
 .output data_object_boundary
 
 // labels of un-initialized data
 .decl bss_data(ea:address)
+.output  bss_data
 .output bss_data
 
 // string
@@ -99,6 +107,7 @@ This module also computes and symbol_minus_symbol.
 .output  string_candidate
 
 .decl string(ea:address,end:address)
+.output  string
 .output string
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -107,6 +116,7 @@ This module also computes and symbol_minus_symbol.
 .decl symbolic_operand_candidate(ea:address,operand_index:operand_index,Dest:address,Type:symbol)
 .output  symbolic_operand_candidate
 .decl symbolic_operand_point(ea:address,operand_index:operand_index,points:number,why:symbol)
+.output  symbolic_operand_point
 .output symbolic_operand_point
 .decl symbolic_operand_total_points(ea:address,operand_index:operand_index,points:number)
 .output  symbolic_operand_total_points
@@ -370,9 +380,11 @@ string_part(EA+1,Base):-
 .output  data_object_candidate
 
 .decl data_object_point(ea:address,size:unsigned,type:symbol,points:number,why:symbol)
+.output  data_object_point
 .output data_object_point
 
 .decl data_object_conflict(ea:address,size:unsigned,type:symbol,ea2:address,size2:unsigned,type2:symbol)
+.output  data_object_conflict
 .output data_object_conflict
 
 .decl discarded_data_object(ea:address,size:unsigned,type:symbol)
@@ -624,6 +636,7 @@ data_object_conflict(EA,Size,Type,EA,Size,Type2):-
     Type != Type2.
 
 .decl data_object_total_points(EA:address,Size:unsigned,Type:symbol,Points:number)
+.output  data_object_total_points
 .output data_object_total_points
 
 data_object_total_points(EA,Size,Type,Points):-
