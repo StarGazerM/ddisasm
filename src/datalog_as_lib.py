@@ -7,17 +7,17 @@ import re
 
 def get_rule_name(rule_decl):
     rule_name = re.findall(r"\.decl(.+)\(", rule_decl)[0]
-    return rule_name
+    return rule_name.strip()
 
 def get_comp_name(comp_decl):
     name = re.findall(r"\.comp(.+) *\{", comp_decl)[0]
-    return name
+    return name.strip()
 
 class DatalogLib:
     '''
     create a datalog lib from a folder
     '''
-    def __init__(self, name, include_path, override=True): 
+    def __init__(self, name, include_path='', override=True): 
         self.name = name
         self.include_path = include_path
         self.override = override
@@ -90,6 +90,11 @@ class DatalogLib:
             # inline_decls = re.findall(r"\.decl .+ inline", self.file_data[filename])
             # for i_decl in inline_decls:
             #     i_name = get_rule_name(i_decl)
+
+    def find_decl_by_name(self, name):
+        for d in self.rule_decls:
+            if get_rule_name(d) == name:
+                return d
 
 
     def rewrite_rule(self):
