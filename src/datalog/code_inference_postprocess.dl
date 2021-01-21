@@ -30,29 +30,34 @@
 */
 
 .decl code_in_refined_block(ea:address,block:address)
-.output  code_in_refined_block
 .output code_in_refined_block
 
 .decl refined_block(block:address)
-.output  refined_block
 .output refined_block
 
 .decl block_information(block:address,size:unsigned,endAddress:address)
-.output  block_information
 .output block_information
 
+// Last instruction of refined block:
+//   In existence of branch with a delay-slot, the delay-slot is the last
+//   instruction.
 .decl refined_block_last_instruction(block:address,EA:address)
-.output  refined_block_last_instruction
+// Last instruction (at runtime) of refined block:
+.output refined_block_last_instruction
+//   In existence of branch with a delay-slot, the branch is the last
+//   instruction.
+.decl refined_block_control_instruction(block:address,EA:address)
+.output refined_block_control_instruction
 
 ////////////////////////////////////////////////////////
 // First we split blocks if there is a symbol pointing to the middle
 
 .decl block_needs_splitting_at(EA:address)
-.output  block_needs_splitting_at
+.output block_needs_splitting_at
 .decl code_in_split_block(ea:address,block:address)
-.output  code_in_split_block
+.output code_in_split_block
 .decl split_block(block:address)
-.output  split_block
+.output split_block
 
 block_needs_splitting_at(EA):-
     // only these sym exprs should be able to point to the middle of a block.
@@ -86,7 +91,7 @@ code_in_split_block(EA,Block):-
 
 // a block that is not referenced anywhere
 .decl block_needs_merging(block:address)
-.output  block_needs_merging
+.output block_needs_merging
 
 block_needs_merging(Block):-
     split_block(Block),
@@ -100,7 +105,7 @@ block_needs_merging(Block):-
     !moved_data_label(_,_,_,Block),
     !moved_label(_,_,_,Block),
     !function_symbol(Block,_),
-    !defined_symbol(Block,_,_,_,_,_),
+    !defined_symbol(Block,_,_,_,_,_,_,_),
     !entry_point(Block),
     !instruction_has_loop_prefix(Block),
     !fde_addresses(Block,_),
@@ -129,13 +134,21 @@ refined_block_last_instruction(Block,EA):-
     next(EA,Next),
     !code_in_refined_block(Next,Block).
 
+refined_block_control_instruction(Block,EA):-
+    refined_block_last_instruction(Block,EA),
+    !arch.delay_slot(EA,_).
+
+refined_block_control_instruction(Block,Branch):-
+    refined_block_last_instruction(Block,EA),
+    arch.delay_slot(Branch,EA).
+
 block_information(Block,BlockSize,LastEA+InsnSize):-
     refined_block_last_instruction(Block,LastEA),
     instruction(LastEA, InsnSize,_,_,_,_,_,_,_,_),
     BlockSize= LastEA+InsnSize - Block.
 
 .decl next_refined_block_in_section(Block:address, NextBlock:address)
-.output  next_refined_block_in_section
+.output next_refined_block_in_section
 
 next_refined_block_in_section(Block,NextBlock):-
     refined_block(Block),
@@ -152,7 +165,6 @@ next_refined_block_in_section(PrevBlock,Block):-
 // Compute padding regions
 
 .decl padding(EA:address,Size:unsigned)
-.output  padding
 .output padding
 
 // blocks with only nops are padding
@@ -170,14 +182,14 @@ padding(EA,Size):-
     Size > 0.
 
 .decl block_has_non_nop(Block:address)
-.output  block_has_non_nop
+.output block_has_non_nop
 
 block_has_non_nop(Block):-
     code_in_refined_block(EA,Block),
     !arch.is_nop(EA).
 
 .decl nop_block(Block:address)
-.output  nop_block
+.output nop_block
 
 nop_block(Block):-
     refined_block(Block),

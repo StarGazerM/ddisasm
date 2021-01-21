@@ -1,4 +1,4 @@
-//===- registers.dl --------------------------------------*- datalog -*-===//
+//===- registers_x86_64.dl ----------------------------------*- datalog -*-===//
 //
 //  Copyright (C) 2019 GrammaTech, Inc.
 //
@@ -30,7 +30,7 @@ This module stablishes basic information about register:
 // limit the registers that are tracked
 // and transform the names to their 64 bits version
 .decl track_register(Reg32:register,Reg64:register)
-.output  track_register
+.output track_register
 
 track_register("EAX","RAX").
 track_register("RAX","RAX").
@@ -79,7 +79,7 @@ track_register("R15D","R15").
 
 // This specifies the registers whose value are not kept through a function call.
 .decl function_non_maintained_reg(reg:register)
-.output  function_non_maintained_reg
+.output function_non_maintained_reg
 
 function_non_maintained_reg("RAX").
 function_non_maintained_reg("RCX").
@@ -96,6 +96,16 @@ arch.function_non_maintained_reg("RSI"):-
     binary_format("ELF").
 
 .decl pc_register(reg:register)
-.output  pc_register
+.output pc_register
 
 pc_register("RIP").
+
+.decl frame_pointer(reg:register)
+.output frame_pointer
+
+frame_pointer("RBP").
+
+.decl stack_pointer(reg:register)
+.output stack_pointer
+
+frame_pointer("RSP").

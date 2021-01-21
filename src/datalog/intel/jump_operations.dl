@@ -24,14 +24,14 @@
 The set of jump operations in x64
 */
 .decl jump_operation(n:symbol)
-.output  jump_operation
+.output jump_operation
 .decl unconditional_jump_operation(n:symbol)
-.output  unconditional_jump_operation
+.output unconditional_jump_operation
 
 .decl jump_equal_operation(n:symbol)
-.output  jump_equal_operation
+.output jump_equal_operation
 .decl jump_unequal_operation(n:symbol)
-.output  jump_unequal_operation
+.output jump_unequal_operation
 
 jump_operation("JCXZ").
 jump_operation("JECXZ").
@@ -67,3 +67,9 @@ jump_equal_operation("JZ").
 
 jump_unequal_operation("JNE").
 jump_unequal_operation("JNZ").
+
+.decl jump_target_op(EA:address,operator:operand_code)
+.output jump_target_op
+
+jump_target_op(EA,Op1):-
+    instruction(EA,_,_,_,Op1,_,_,_,_,_).

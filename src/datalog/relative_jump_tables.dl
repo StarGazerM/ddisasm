@@ -26,14 +26,16 @@ This module deals exclusively with detecting jump tables with relative addresses
 
 
 .decl data_word(EA:address,Size:unsigned,Val:number)
-.output  data_word
 .output data_word
 
 data_word(EA,2,Val):-
     data_byte(EA,Byte0), EA % 2 = 0,//jump tables are assumed to be aligned
     data_byte(EA+1,Byte1),
     Byte1 < 128,//the number is positive
-    Val = as(Byte1*2^8 + Byte0,number).
+    (
+        (endianness("LE"), Val = as(Byte1*2^8 + Byte0,number));
+        (endianness("BE"), Val = as(Byte0*2^8 + Byte1,number))
+    ).
 
 data_word(EA,4,Val):-
     data_byte(EA,Byte0),
@@ -43,11 +45,17 @@ data_word(EA,4,Val):-
     data_byte(EA+3,Byte3),
     (
         Byte3 >= 128,//the number is negative
-        Val = -(2^32 -as( Byte3*2^24+ Byte2*2^16 + Byte1*2^8 + Byte0,number)),
+        (
+            (endianness("LE"), Val = -(2^32 -as( Byte3*2^24+ Byte2*2^16 + Byte1*2^8 + Byte0,number)));
+            (endianness("BE"), Val = -(2^32 -as( Byte0*2^24+ Byte1*2^16 + Byte2*2^8 + Byte3,number)))
+        ),
         Val != 0
         ;
         Byte3 < 128,//the number is positive
-        Val =  as(Byte3*2^24+ Byte2*2^16 + Byte1*2^8 + Byte0,number)
+        (
+            (endianness("LE"), Val = as(Byte3*2^24+ Byte2*2^16 + Byte1*2^8 + Byte0,number));
+            (endianness("BE"), Val = as(Byte0*2^24+ Byte1*2^16 + Byte2*2^8 + Byte3,number))
+        )
     ).
 
 data_word(EA,8,Val):-
@@ -61,12 +69,14 @@ data_word(EA,8,Val):-
     data_byte(EA+6,Byte6),
     data_byte(EA+7,Byte7),
 
-    Val =  as((Byte7*2^56)  bor (Byte6*2^48)   bor (Byte5*2^40)  bor (Byte4*2^32) +
-           (Byte3*2^24) bor (Byte2*2^16) bor (Byte1*2^8) bor Byte0,number).
+    (
+        (endianness("LE"), Val = as((Byte7*2^56) bor (Byte6*2^48) bor (Byte5*2^40) bor (Byte4*2^32) + (Byte3*2^24) bor (Byte2*2^16) bor (Byte1*2^8) bor Byte0,number));
+        (endianness("BE"), Val = as((Byte0*2^56) bor (Byte1*2^48) bor (Byte2*2^40) bor (Byte3*2^32) + (Byte4*2^24) bor (Byte5*2^16) bor (Byte6*2^8) bor Byte7,number))
+    ).
 
 
 .decl take_address(Src:address,Address_taken:address)
-.output  take_address
+.output take_address
 
 take_address(Src,Address):-
     pc_relative_operand(Src,1,Address),
@@ -83,11 +93,10 @@ In these jump tables, the reference address coincides with the starting address
 of the jump table.
 */
 .decl relative_address(EA:address,Size:unsigned,TableStart:address,Reference:address,Dest:address,DestIsFirstOrSecond:symbol)
-.output  relative_address
 .output relative_address
 
 .decl relative_address_start(EA:address,Size:unsigned,Reference:address,Dest:address, DestIsFirstOrSecond:symbol)
-.output  relative_address_start
+.output relative_address_start
 
 relative_address_start(EA,Size,EA,Dest,DestIsFirstOrSecond):-
     take_address(_,EA),
@@ -128,7 +137,7 @@ relative_address(EA+Size,Size,TableStart,Ref,Dest,DestIsFirstOrSecond):-
 
 // auxiliary predicate for detecting accessing an element of a jump table.
 .decl jump_table_element_access(EA:address,Size:unsigned,TableStart:address)
-.output  jump_table_element_access
+.output jump_table_element_access
 
 jump_table_element_access(EA,Size,TableStartAddr):-
     data_access(EA,_,"NONE","NONE",RegIndex,as(Size,number),TableStart,Size),
@@ -170,7 +179,6 @@ jump_table_element_access(EA,Size,TableStartAddr):-
 
 
 .decl jump_table_start(EA_jump:address,Size:unsigned,TableStart:address,TableRef:address,Operation:symbol)
-.output  jump_table_start
 .output jump_table_start
 
 //  mov REG, Size [REG*Size+TableStart] or mov REG, Size [REG*Size+ RegBase] where RegBase = TableStart

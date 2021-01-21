@@ -27,7 +27,6 @@ and characteristics
 
 // Compute an immediate load performed across two consecutive instructions
 .decl split_load(ea:address, nextea:address, dest:address, type:symbol)
-.output  split_load
 .output split_load
 
 split_load(EA, NextEA, as(Base + Offset,address), "ADD") :-

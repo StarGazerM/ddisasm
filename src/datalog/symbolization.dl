@@ -63,63 +63,53 @@ This module also computes and symbol_minus_symbol.
 #include "register_type_analysis.dl"
 
 .decl symbolic_operand(ea:address,index:operand_index,value:address,type:symbol)
-.output  symbolic_operand
 .output symbolic_operand
 
 .decl symbolic_data(ea:address,size:unsigned,value:address)
-.output  symbolic_data
 .output symbolic_data
 
 // Symbolic expression generated from relocations
 .decl symbolic_expr_from_relocation(ea:address,size:unsigned,symbol:symbol,Addend:number)
-.output  symbolic_expr_from_relocation
 .output symbolic_expr_from_relocation
 
 .decl symbol_minus_symbol_jump_table(EA:address,TableStart:address,Size:unsigned,Symbol1:address,Symbol2:address,Reference:symbol,Scale:unsigned)
-.output  symbol_minus_symbol_jump_table
 .output symbol_minus_symbol_jump_table
 
 .decl symbol_minus_symbol(ea:address,size:unsigned,symbol1:address,symbol2:address,scale:unsigned)
-.output  symbol_minus_symbol
 .output symbol_minus_symbol
 
 // symbolic data that points to code
 .decl code_pointer_in_data(EA:address,Val:address)
-.output  code_pointer_in_data
+.output code_pointer_in_data
 
 // data that is dereferenced somewhere in the code
 .decl labeled_data(ea:address)
-.output  labeled_data
 .output labeled_data
 
 // How data sections are divided into elements by labels or data objects
 .decl data_object_boundary(EA:address)
-.output  data_object_boundary
 .output data_object_boundary
 
 // labels of un-initialized data
 .decl bss_data(ea:address)
-.output  bss_data
 .output bss_data
 
 // string
 .decl string_candidate(ea:address,end:address)
-.output  string_candidate
+.output string_candidate
 
 .decl string(ea:address,end:address)
-.output  string
 .output string
 
 ////////////////////////////////////////////////////////////////////////////////////
 // candidates of symbolic values in the code
 
 .decl symbolic_operand_candidate(ea:address,operand_index:operand_index,Dest:address,Type:symbol)
-.output  symbolic_operand_candidate
+.output symbolic_operand_candidate
 .decl symbolic_operand_point(ea:address,operand_index:operand_index,points:number,why:symbol)
-.output  symbolic_operand_point
 .output symbolic_operand_point
 .decl symbolic_operand_total_points(ea:address,operand_index:operand_index,points:number)
-.output  symbolic_operand_total_points
+.output symbolic_operand_total_points
 
 symbolic_operand_candidate(EA,Op_index,Dest_addr,Type):-
   binary_type("EXEC"),
@@ -150,12 +140,12 @@ symbolic_operand_candidate(EA,Op_index,Dest,Type):-
     (
         instruction_immediate_offset(EA,Op_index,ImmediateOffset),
         relocation(EA+ImmediateOffset,_,Symbol,Addend),
-        symbol(SymbolAddr,_,_,_,_,Symbol),
+        symbol(SymbolAddr,_,_,_,_,_,_,Symbol),
         Dest = as(as(SymbolAddr,number)+Addend,address)
         ;
         instruction_displacement_offset(EA,Op_index,DisplacementOffset),
         relocation(EA+DisplacementOffset,_,Symbol,Addend),
-        symbol(SymbolAddr,_,_,_,_,Symbol),
+        symbol(SymbolAddr,_,_,_,_,_,_,Symbol),
         Dest = as(as(SymbolAddr,number)+Addend,address)
         ;
         direct_call(EA,Dest),
@@ -207,6 +197,7 @@ symbolic_operand_point(EA,Imm_index,-2,"point to exception section"):-
 
  symbolic_operand_point(EA,Imm_index,-1,"operated on logical operation result"):-
     op_immediate_and_reg(EA,_,Reg,Imm_index,_),
+    !arch.jump(EA),
     def_used(EA_def,Reg,EA,_),
     instruction_get_operation(EA_def,Operation),
     arch.logic_operation(Operation),
@@ -249,10 +240,10 @@ symbolic_operand(EA,Op_index,Value,Type):-
 ///////////////////////////////
 // label candidates before moving
 .decl labeled_data_candidate(EA:address)
-.output  labeled_data_candidate
+.output labeled_data_candidate
 
 labeled_data_candidate(EA):-
-    symbol(EA,_,_,_,_,_).
+    symbol(EA,_,_,_,_,_,_,_).
 
 labeled_data_candidate(EA):-
     symbolic_operand(_,_,EA,"data").
@@ -315,7 +306,7 @@ symbol_minus_symbol_jump_table(EA+Size,TableStart,Size,Symbol,Reference,"second"
 // address_in_data considers anything that points to the code region
 // this refinement restricts that to the beginning of the final blocks
 .decl address_in_data_refined(EA:address,Val:address)
-.output  address_in_data_refined
+.output address_in_data_refined
 
 address_in_data_refined(EA,Val):-
     binary_type("DYN"),
@@ -356,7 +347,7 @@ string_candidate(Beg,End+1):-
 
 
 .decl string_part(ea:address,base:address)
-.output  string_part
+.output string_part
 
 string_part(EA,EA):-
     preferred_data_access(EA,_),
@@ -377,21 +368,18 @@ string_part(EA+1,Base):-
 
 ///////////////////////////////////////////////////////////////////////////
 .decl data_object_candidate(ea:address,size:unsigned,type:symbol)
-.output  data_object_candidate
+.output data_object_candidate
 
 .decl data_object_point(ea:address,size:unsigned,type:symbol,points:number,why:symbol)
-.output  data_object_point
 .output data_object_point
 
 .decl data_object_conflict(ea:address,size:unsigned,type:symbol,ea2:address,size2:unsigned,type2:symbol)
-.output  data_object_conflict
 .output data_object_conflict
 
 .decl discarded_data_object(ea:address,size:unsigned,type:symbol)
-.output  discarded_data_object
+.output discarded_data_object
 
 .decl data_object(ea:address,size:unsigned,type:symbol)
-.output  data_object
 
 data_object_candidate(EA,Size,"symbol-symbol"):-
     symbol_minus_symbol_jump_table(EA,_,Size,_,_,_,_).
@@ -417,7 +405,7 @@ data_object_candidate(EA,Size,"other"):-
 //  we consider that we found an array of addresses
 // we do not cross labels
 .decl after_address_in_data(EA:address,EA_next:address)
-.output  after_address_in_data
+.output after_address_in_data
 
 after_address_in_data(EA,EA+Pt_size):-
     address_in_data_refined(EA,_),
@@ -432,7 +420,7 @@ after_address_in_data(EA,EA_aux+1):-
     !labeled_data_candidate(EA_aux+1).
 
 .decl next_address_in_data(EA:address,EA_next:address)
-.output  next_address_in_data
+.output next_address_in_data
 
 
 next_address_in_data(EA,EA_next):-
@@ -442,7 +430,7 @@ next_address_in_data(EA,EA_next):-
 
 
 .decl address_array_aux(EA:address,Distance:unsigned,type:symbol,InitialEA:address)
-.output  address_array_aux
+.output address_array_aux
 
 address_array_aux(EA,Diff,"code",EA):-
     address_in_data_refined(EA,Dest1),code(Dest1),
@@ -487,7 +475,7 @@ address_array_aux(EA+Diff,Diff,"data",InitialEA):-
     Begin <= Dest2, Dest2 <= End.
 
 .decl address_array(EA:address,Distance:unsigned,InitialEA:address)
-.output  address_array
+.output address_array
 
 address_array(EA,Distance,InitialEA):-
     address_array_aux(EA,Distance,_,InitialEA).
@@ -636,7 +624,6 @@ data_object_conflict(EA,Size,Type,EA,Size,Type2):-
     Type != Type2.
 
 .decl data_object_total_points(EA:address,Size:unsigned,Type:symbol,Points:number)
-.output  data_object_total_points
 .output data_object_total_points
 
 data_object_total_points(EA,Size,Type,Points):-
@@ -687,7 +674,7 @@ code_pointer_in_data(EA,Val):-
 // Final label decision
 
 labeled_data(EA):-
-    symbol(EA,_,_,_,_,_).
+    symbol(EA,_,_,_,_,_,_,_).
 
 labeled_data(EA):-
     symbolic_operand(Src,_,EA,"data"),

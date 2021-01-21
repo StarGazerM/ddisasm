@@ -53,16 +53,13 @@ compute an address but this is also no enough.
 */
 
 .decl moved_data_label(EA:address,Size:unsigned,Dest:address,NewDest:address)
-.output  moved_data_label
 .output moved_data_label
 
 .decl moved_label(EA:address,Index:operand_index,Val:address,New_val:address)
-.output  moved_label
 .output moved_label
 
 // this predicate is just for debugging purposes
 .decl moved_label_class(EA:address,Index:operand_index,Reason:symbol)
-.output  moved_label_class
 .output moved_label_class
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +74,7 @@ moved_data_label(EA,Size,Dest,NewDest):-
 moved_data_label(EA,SizePointer,Dest,Address):-
     symbolic_data(EA,SizePointer,Dest),
     !code(Dest),
-    symbol(Address,Size,_,_,_,Name),
+    symbol(Address,Size,_,_,_,_,_,Name),
     !function_symbol(Address,Name),
     Address < Dest,
     Dest < Address+Size.
@@ -90,7 +87,7 @@ moved_data_label(EA,SizePointer,Dest,Address):-
 ////////////////////////////////////////////////////////////////////////////////////
 
 .decl moved_pc_relative_candidate(EA:address,Index:operand_index,Val:address,NewVal:address,Diff:unsigned)
-.output  moved_pc_relative_candidate
+.output moved_pc_relative_candidate
 
 moved_pc_relative_candidate(EA_def2,Op_index,Dest,NewDest,Diff):-
     binary_format("ELF"),
@@ -188,7 +185,6 @@ moved_displacement_candidate(EA,Op_index,Dest,NewDest,Diff):-
     ).
 
 .decl moved_displacement_candidate(EA:address,Op_index:operand_index,Dest:address,NewDest:address,Priority:unsigned)
-.output  moved_displacement_candidate
 .output moved_displacement_candidate
 
 moved_label_class(EA,Op_index,"miss section with access"),
@@ -292,12 +288,12 @@ moved_displacement_candidate(EA,Op_index,DestAddr,SymbolAddr,0):-
     DestAddr = as(Dest,address),
     instruction_displacement_offset(EA,Op_index,DisplacementOffset),
     relocation(EA+DisplacementOffset,_,Symbol,_),
-    symbol(SymbolAddr,_,_,_,_,Symbol),
+    symbol(SymbolAddr,_,_,_,_,_,_,Symbol),
     SymbolAddr != DestAddr.
 
 // we take the candidate with the shortest distance/priority
 .decl discarded_moved_displacement_candidate(EA:address,Op_index:operand_index,Dest:address,NewDest:address,Distance:unsigned)
-.output  discarded_moved_displacement_candidate
+.output discarded_moved_displacement_candidate
 
 discarded_moved_displacement_candidate(EA,Op_index,Dest,NewDest,Distance1):-
     moved_displacement_candidate(EA,Op_index,Dest,NewDest,Distance1),
@@ -313,12 +309,12 @@ moved_label(EA,Op_index,Dest,NewDest):-
 
 
 .decl mov_immediate_to_reg(EA:address,Reg:register,Imm_index:operand_index,Immediate:number)
-.output  mov_immediate_to_reg
+.output mov_immediate_to_reg
 .decl cmp_reg_to_reg(EA:address,Reg1:register,Reg2:register)
-.output  cmp_reg_to_reg
+.output cmp_reg_to_reg
 
 .decl moved_immediate_candidate(EA:address,Op_index:operand_index,Immediate:address,New_immmediate:address)
-.output  moved_immediate_candidate
+.output moved_immediate_candidate
 
 mov_immediate_to_reg(EA,Reg,Imm_index,Immediate):-
     code(EA),
@@ -339,7 +335,6 @@ cmp_reg_to_reg(EA,Reg1,Reg2):-
 
 .decl dest_enlarged_data_section(EA:address,Reg:register,NewDest:address,
             Beg:address,End:address,OldBeg:address,OldEnd:address)
-.output  dest_enlarged_data_section
 .output dest_enlarged_data_section
 
 dest_enlarged_data_section(EA_def,Reg,NewDestAddr,Beg-MultAbs,Beg+SizeSect+MultAbs,Beg,Beg+SizeSect):-
@@ -426,7 +421,7 @@ moved_immediate_candidate(EA,Op_index,DestAddr,SymbolAddr):-
     op_immediate(Op,Dest), Dest >= 0,
     DestAddr = as(Dest,address),
     relocation(EA+ImmediateOffset,_,Symbol,_),
-    symbol(SymbolAddr,_,_,_,_,Symbol),
+    symbol(SymbolAddr,_,_,_,_,_,_,Symbol),
     SymbolAddr != DestAddr.
 
 moved_label(EA,Op_index,Dest,NewDest):-
@@ -435,10 +430,13 @@ moved_label(EA,Op_index,Dest,NewDest):-
 // If the destination is in the middle of a known symbol
 moved_label_class(EA,Op_index,"middle of symbol"),
 moved_label(EA,Op_index,Dest,Address):-
-    symbolic_operand(EA,Op_index,Dest,"data"),
+    (
+      symbolic_operand(EA,Op_index,Dest,"data");
+      got_relative_operand(EA,Op_index,Dest)
+    ),
     !moved_displacement_candidate(EA,Op_index,_,_,_),
     !moved_immediate_candidate(EA,Op_index,_,_),
-    symbol(Address,Size,_,_,_,Name),
+    symbol(Address,Size,_,_,_,_,_,Name),
     !function_symbol(Address,Name),
     Address < Dest,
     Dest < Address+Size.

@@ -45,6 +45,10 @@ void ModuleLoader(const gtirb::Module& Module, DatalogProgram& Program)
         }
     }
 
+    // For now, use ISA info to infer endianness.
+    // TODO: Get the endianness info from gtirb.
+    std::string Endianness = "LE";
+
     // Binary object type.
     std::string BinaryType;
     if(auto AuxData = Module.getAuxData<gtirb::schema::BinaryType>())
@@ -60,6 +64,7 @@ void ModuleLoader(const gtirb::Module& Module, DatalogProgram& Program)
     Program.insert<std::vector<std::string>>("binary_format", {BinaryFormat});
     Program.insert<std::vector<gtirb::Addr>>("base_address", {BaseAddress});
     Program.insert<std::vector<gtirb::Addr>>("entry_point", {EntryPoint});
+    Program.insert<std::vector<std::string>>("endianness", {Endianness});
 }
 
 const char* binaryFormat(const gtirb::FileFormat Format)
@@ -92,6 +97,8 @@ const char* binaryISA(gtirb::ISA Arch)
 {
     switch(Arch)
     {
+        case gtirb::ISA::IA32:
+            return "X86";
         case gtirb::ISA::X64:
             return "X64";
         case gtirb::ISA::ARM64:

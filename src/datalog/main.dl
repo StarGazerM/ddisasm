@@ -65,12 +65,15 @@ This module:
 
 // architecture specific predicates
 #ifdef ARCH_ARM64
-    .init arch = ARM64
     #include "arm_binaries.dl"
     #include "arm64/arch_arm64.dl"
+    .init arch = ARM64
+#elif defined(ARCH_IA32)
+    #include "intel/arch_x86_32.dl"
+    .init arch = X86_32
 #elif defined(ARCH_AMD64)
-    .init arch = X64
-    #include "x64/arch_x64.dl"
+    #include "intel/arch_x86_64.dl"
+    .init arch = X86_64
 #else
     #error "Undefined architecture"
 #endif
@@ -103,81 +106,88 @@ This module:
 
 // metadata
 .decl entry_point(ea:address)
-.output  entry_point
+.output entry_point
 .input entry_point
 
-.decl symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned,name:symbol)
-.output  symbol
+.decl endianness(End:symbol) // Either LE or BE
+.output endianness
+.input endianness
+
+.decl base_address(ea:address)
+.output base_address
+.input base_address
+
+.decl symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned, originTable:symbol,tableIndex:unsigned,name:symbol)
 .input symbol
 
 .decl section_complete(name:symbol,size:unsigned,addr:address,type:unsigned,flags:unsigned,align:unsigned)
-.output  section_complete
+.output section_complete
 .input section_complete
 
 .decl relocation(ea:address,type:symbol,name:symbol,addend:number)
-.output  relocation
+.output relocation
 .input relocation
 
 .decl binary_type(Type:symbol)
-.output  binary_type
+.output binary_type
 .input binary_type
 
 .decl binary_format(Format:symbol)
-.output  binary_format
+.output binary_format
 .input binary_format
 
 .decl binary_isa(isa:symbol)
-.output  binary_isa
+.output binary_isa
 .input binary_isa
 
 .decl option(Option:symbol)
-.output  option
+.output option
 .input option
 
+.decl dynamic_entry(tag:symbol, value:unsigned)
+.output dynamic_entry
+.input dynamic_entry
 
 // instructions
 
 .decl instruction(ea:address, size:unsigned, prefix:symbol, opcode:symbol,
           op1:operand_code, op2:operand_code, op3:operand_code, op4:operand_code,
           immOffset:unsigned,displacementOffset:unsigned)
-.output  instruction
 .input instruction
 
 .decl invalid_op_code(ea:address)
-.output  invalid_op_code
+.output invalid_op_code
 .input invalid_op_code
 
 // three kinds of operators
 .decl op_regdirect(code:operand_code,register_name:register)
-.output  op_regdirect
+.output op_regdirect
 .input op_regdirect
 
 .decl op_immediate(code:operand_code,offset:number)
-.output  op_immediate
+.output op_immediate
 .input op_immediate
 
 .decl op_prefetch(code:operand_code, prefetch_type:symbol)
-.output  op_prefetch
 .input op_prefetch
 .output op_prefetch
 
 .decl op_barrier(code:operand_code, prefetch_type:symbol)
-.output  op_barrier
 .input op_barrier
 .output op_barrier
 
 .decl op_indirect(code:operand_code,reg1:register, reg2:register, reg3:register,
         multiplier:number, offset:number, size_value:unsigned)
-.output  op_indirect
+.output op_indirect
 .input op_indirect
 
 // data from sections
 .decl data_byte(ea:address,value:unsigned)
-.output  data_byte
+.output data_byte
 .input data_byte
 
 .decl address_in_data(ea:address,value:address)
-.output  address_in_data
+.output address_in_data
 
 .input address_in_data
 
@@ -191,7 +201,6 @@ This module:
 /////////////////////////////////////////////////////////////
 
 .decl instruction_immediate_offset(EA:address,Index:operand_index,Offset:unsigned)
-.output  instruction_immediate_offset
 .output instruction_immediate_offset
 
 instruction_immediate_offset(EA,Index,ImmediateOffset):-
@@ -200,7 +209,6 @@ instruction_immediate_offset(EA,Index,ImmediateOffset):-
     op_immediate(Op,_).
 
 .decl instruction_displacement_offset(EA:address,Index:operand_index,Offset:unsigned)
-.output  instruction_displacement_offset
 .output instruction_displacement_offset
 
 instruction_displacement_offset(EA,Index,DisplacementOffset):-
@@ -214,7 +222,7 @@ instruction_get_operation(EA,Operation):-
     instruction(EA,_,_,Operation,_,_,_,_,_,_).
 
 .decl instruction_get_op(ea:address, index:operand_index, operator:operand_code)
-.output  instruction_get_op
+.output instruction_get_op
 
 instruction_get_op(EA,Index,Op):-
     instruction(EA,_,_,_,Op1,Op2,Op3,Op4,_,_),
@@ -233,7 +241,7 @@ instruction_get_op(EA,Index,Op):-
     ).
 
 .decl instruction_get_dest_op(ea:address,index:number,op:operand_code)
-.output  instruction_get_dest_op
+.output instruction_get_dest_op
 
 instruction_get_dest_op(EA,Index,Op):-
     instruction(EA,_,_,Operation,_,Op2,Op3,Op4,_,_),
@@ -254,12 +262,13 @@ instruction_get_dest_op(EA,Index,Op):-
         Op = Op4,
         Index = 4
     ).
+
 instruction_get_dest_op(EA,1,Op):-
     instruction(EA,_,_,Operation,Op,0,0,0,_,_),
     arch.one_op_write(Operation).
 
 .decl instruction_get_src_op(ea:address,Index:operand_index,op:operand_code)
-.output  instruction_get_src_op
+.output instruction_get_src_op
 
 //when the dest is used as a source as well
 instruction_get_src_op(EA,Index,Op2):-
@@ -277,18 +286,18 @@ instruction_get_src_op(EA,Index,Op):-
     ),
     !arch.write_only_operation(Operation).
 
+
 /////////////////////////////////////////////////////////////
 // inference of basic facts
 /////////////////////////////////////////////////////////////
 
 .decl next(n:address,m:address)
-.output  next
+.output next
 
 next(EA,EA+Size):-
     instruction(EA,Size,_,_,_,_,_,_,_,_).
 
 .decl pc_relative_operand(src:address,index:operand_index, dest:address)
-.output  pc_relative_operand
 .output pc_relative_operand
 
 pc_relative_operand(EA,Index,as(as(EANext,number)+Offset,address)):-
@@ -298,12 +307,14 @@ pc_relative_operand(EA,Index,as(as(EANext,number)+Offset,address)):-
     arch.pc_register(Reg),
     next(EA,EANext).
 
+.decl got_relative_operand(EA:address,Index:operand_index,Dest:address)
+.output got_relative_operand
+
 .decl symbolic_operand_attribute(ea:address,index:unsigned,attribute:symbol)
-.output  symbolic_operand_attribute
 .output symbolic_operand_attribute
 
 .decl instruction_has_loop_prefix(EA:address)
-.output  instruction_has_loop_prefix
+.output instruction_has_loop_prefix
 
 instruction_has_loop_prefix(EA):-
     instruction(EA,_,Prefix,_,_,_,_,_,_,_),
@@ -311,7 +322,7 @@ instruction_has_loop_prefix(EA):-
 
 // JUMPS
 .decl unconditional_jump(n:address)
-.output  unconditional_jump
+.output unconditional_jump
 
 unconditional_jump(EA):-
     arch.jump(EA),
@@ -319,7 +330,7 @@ unconditional_jump(EA):-
     arch.unconditional_jump_operation(Operation).
 
 .decl conditional_jump(src:address)
-.output  conditional_jump
+.output conditional_jump
 
 conditional_jump(EA):-
     arch.jump(EA),
@@ -329,13 +340,12 @@ conditional_jump(EA):-
 
 // direct jumps
 .decl direct_jump(src:address, dest:address)
-.output  direct_jump
 .output direct_jump
 
 direct_jump(EA,as(Dest,address)):-
     arch.jump(EA),
-    instruction_get_op(EA,1,Op1),
-    op_immediate(Op1,Dest).
+    arch.jump_target_op(EA,TargetOp),
+    op_immediate(TargetOp,Dest).
 
 direct_jump(EA,EA):-
     instruction_has_loop_prefix(EA).
@@ -343,7 +353,6 @@ direct_jump(EA,EA):-
 // Special kinds of indirect jumps
 // PC relative jumps
 .decl pc_relative_jump(src:address, dest:address)
-.output  pc_relative_jump
 .output pc_relative_jump
 
 pc_relative_jump(EA,Dest):-
@@ -352,37 +361,35 @@ pc_relative_jump(EA,Dest):-
 
 // jump to the address of a register
  .decl reg_jump(src:address,Reg:symbol)
-.output  reg_jump
+.output reg_jump
 
 reg_jump(EA,Reg):-
     arch.jump(EA),
-    instruction(EA,_,_,_,Op1,_,_,_,_,_),
-    op_regdirect(Op1,Reg).
+    arch.jump_target_op(EA,TargetOp),
+    op_regdirect(TargetOp,Reg).
 
 // indirect jump
  .decl indirect_jump(src:address)
-.output  indirect_jump
+.output indirect_jump
 
 indirect_jump(EA):-
     arch.jump(EA),
-    instruction(EA,_,_,_,Op1,_,_,_,_,_),
-    op_indirect(Op1,_,_,_, _,_,_),
+    arch.jump_target_op(EA,TargetOp),
+    op_indirect(TargetOp,_,_,_, _,_,_),
     !pc_relative_jump(EA,_).
 
 // CALLS
 // direct calls
 .decl direct_call(src:address, dest:address)
-.output  direct_call
 .output direct_call
 
 direct_call(EA,as(Dest,address)):-
     arch.call_operation(Operation),
-    instruction(EA,_,_,Operation,Op1,_,_,_,_,_),
-    op_immediate(Op1,Dest).
-
+    instruction_get_operation(EA,Operation),
+    arch.jump_target_op(EA,TargetOp),
+    op_immediate(TargetOp,Dest).
 
 .decl pc_relative_call(src:address,dest:address)
-.output  pc_relative_call
 .output pc_relative_call
 
 pc_relative_call(Src,Dest):-
@@ -393,34 +400,34 @@ pc_relative_call(Src,Dest):-
 
 // for now we do not compute anything about these
 .decl reg_call(src:address,reg:register)
-.output  reg_call
 .output reg_call
 
 reg_call(EA,Reg):-
     arch.call_operation(Operation),
-    instruction(EA,_,_,Operation,Op1,_,_,_,_,_),
-    op_regdirect(Op1,Reg).
+    instruction_get_operation(EA,Operation),
+    arch.jump_target_op(EA,TargetOp),
+    op_regdirect(TargetOp,Reg).
 
  .decl indirect_call(src:address)
-.output  indirect_call
 // .output indirect_call
 
 indirect_call(EA):-
     arch.call_operation(Operation),
-    instruction(EA,_,_,Operation,Op1,_,_,_,_,_),
-    op_indirect(Op1,_,_,_,_,_,_),
+    instruction_get_operation(EA,Operation),
+    arch.jump_target_op(EA,TargetOp),
+    op_indirect(TargetOp,_,_,_,_,_,_),
     !pc_relative_call(EA,_).
 
 // Returns
 .decl return(n:address)
-.output  return
+.output return
 
 return(EA):-
     arch.return_operation(Operation),
     instruction_get_operation(EA,Operation).
 
 .decl halt(EA:address)
-.output  halt
+.output halt
 
 halt(EA):-
     arch.halt_operation(Operation),
@@ -430,7 +437,7 @@ halt(EA):-
 // Operations to abstract features of instructions
 
 .decl op_indirect_contains_reg(op:operand_code,reg:register)
-.output  op_indirect_contains_reg
+.output op_indirect_contains_reg
 
 // we ignore segment registers
 op_indirect_contains_reg(Op,Reg_uniform):-
@@ -442,7 +449,7 @@ op_indirect_contains_reg(Op,Reg_uniform):-
     arch.track_register(Reg3,Reg_uniform).
 
 .decl op_regdirect_contains_reg(op:operand_code,reg:register)
-.output  op_regdirect_contains_reg
+.output op_regdirect_contains_reg
 
 op_regdirect_contains_reg(Op,Reg_uniform):-
     op_regdirect(Op,Reg),
@@ -451,7 +458,7 @@ op_regdirect_contains_reg(Op,Reg_uniform):-
 
 // The instruction at EA has operation Operation and two operands: a register Reg and an immediate Immediate
 .decl op_immediate_and_reg(EA:address,Operation:symbol,Reg:register,Imm_index:operand_index,Immediate:number)
-.output  op_immediate_and_reg
+.output op_immediate_and_reg
 
 op_immediate_and_reg(EA,Operation,Reg,Imm_index,Immediate):-
     instruction_get_operation(EA,Operation),
@@ -462,59 +469,72 @@ op_immediate_and_reg(EA,Operation,Reg,Imm_index,Immediate):-
 
 // The instruction at EA is a comparison between a register Reg and an immediate Immediate
 .decl cmp_immediate_to_reg(EA:address,Reg:register,Imm_index:operand_index,Immediate:number)
-.output  cmp_immediate_to_reg
+.output cmp_immediate_to_reg
 
 cmp_immediate_to_reg(EA,Reg,Imm_index,Immediate):-
     op_immediate_and_reg(EA,Operation,Reg,Imm_index,Immediate),
     arch.cmp_operation(Operation).
 
 /////////////////////////////////////////////////////////////////////////////////
+
+.decl symbol_set(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned,name:symbol)
+.output symbol_set
+
+symbol_set(EA,Size,Type,Scope,SectIndex,Name):-
+    symbol(EA,Size,Type,Scope,SectIndex,_,_,Name).
+
 .decl ambiguous_symbol(name:symbol)
-.output  ambiguous_symbol
 .output ambiguous_symbol
 
 ambiguous_symbol(Name):-
-    symbol(_,_,_,_,_,Name),
-    1 < count :{symbol(_,_,_,_,_,Name)}.
+    symbol_set(_,_,_,_,_,Name),
+    1 < count :{symbol_set(_,_,_,_,_,Name)}.
 
 // Function symbols
 .decl function_symbol(ea:address,name:symbol)
-.output  function_symbol
 .output function_symbol
 
 function_symbol(EA,Name):-
-    symbol(EA,_,"FUNC",_,_,Name).
+    symbol(EA,_,"FUNC",_,_,_,_,Name).
 
-.decl defined_symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned,name:symbol)
-.output  defined_symbol
+function_symbol(EA,Name):-
+    symbol(EA,_,"GNU_IFUNC",_,_,_,_,Name).
 
-defined_symbol(EA,Size,Type,Scope,SectIndex,Name):-
-    symbol(EA,Size,Type,Scope,SectIndex,Name),
+.decl defined_symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned,originTable:symbol,tableIndex:unsigned,name:symbol)
+.output defined_symbol
+
+defined_symbol(EA,Size,Type,Scope,SectIndex,OriginTable,TableIndex,Name):-
+    symbol(EA,Size,Type,Scope,SectIndex,OriginTable,TableIndex,Name),
     SHN_UNDEF = 0,
     SHN_LORESERVE = 65280,
     SHN_HIRESERVE = 65535,
     //the symbol is not undefined
     SectIndex != SHN_UNDEF,
     (SectIndex < SHN_LORESERVE; SectIndex > SHN_HIRESERVE).
+
+// Labels which are defined "at-end" of a data or code region/referent.
+// Such labels will usually associate with a symbol at address Dest, but they
+// can be safely aliased to a new symbol at the end of the Block.
+.decl boundary_label(EA:address,Dest:address,Block:address)
+.output boundary_label
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 .decl section(name:symbol,size:unsigned,addr:address)
-.output  section
+.output section
 .decl data_section(name:symbol)
-.output  data_section
+.output data_section
 .decl exception_section(name:symbol)
-.output  exception_section
+.output exception_section
 .decl special_data_section(name:symbol)
-.output  special_data_section
+.output special_data_section
 .decl regular_data_section(name:symbol)
-.output  regular_data_section
+.output regular_data_section
 .decl code_section(name:symbol)
-.output  code_section
+.output code_section
 .decl tls_section(name:symbol)
-.output  tls_section
 .output tls_section
 .decl bss_section(name:symbol)
-.output  bss_section
 .output bss_section
 
 regular_data_section(Name):-
@@ -522,11 +542,9 @@ regular_data_section(Name):-
     !special_data_section(Name).
 
 .decl non_zero_data_section(name:symbol)
-.output  non_zero_data_section
 .output non_zero_data_section
 
 .decl bss_section_limits(Begin:address,End:address)
-.output  bss_section_limits
 .output bss_section_limits
 
 bss_section_limits(0,0):-
@@ -542,7 +560,6 @@ data segments can be data sections or fragments of the code section that
 contain data instead of code.
 */
 .decl initialized_data_segment(Begin:address,End:address)
-.output  initialized_data_segment
 .output initialized_data_segment
 
 initialized_data_segment(Begin,Begin+Size):-
@@ -553,7 +570,7 @@ initialized_data_segment(Begin,End):-
     data_in_code(Begin,End).
 
 .decl data_segment(Begin:address,End:address)
-.output  data_segment
+.output data_segment
 
 data_segment(Begin,Begin+Size):-
     data_section(Section),
@@ -565,44 +582,52 @@ data_segment(Begin,End):-
 ////////////////////////////////////////////////////////////////////////////
 // detect references  to libraries (calls to plt)
 .decl plt_block(block:address,function:symbol)
-.output  plt_block
 .output plt_block
 
 .decl got_reference(Got_entry:address,Symbol:symbol)
-.output  got_reference
 .output got_reference
 
 .decl got_local_reference(Got_entry:address,Dest:address)
-.output  got_local_reference
 .output got_local_reference
 
 //////////////////////////////////////////////////////////////////////////
 // find special functions and symbols
 .decl main_function(ea:address)
-.output  main_function
+.output main_function
 
-.decl inferred_symbol_name(ea:address,name:symbol,scope:symbol)
-.output  inferred_symbol_name
+.decl inferred_symbol_name(ea:address,name:symbol,scope:symbol, type: symbol)
 .output inferred_symbol_name
 
-inferred_symbol_name(EA,"main","GLOBAL"):-
+inferred_symbol_name(EA,"main","GLOBAL","FUNC"):-
     binary_format("ELF"),
     main_function(EA).
 
 .decl no_return_call(EA:address)
-.output  no_return_call
+.output no_return_call
+
 .decl function_pointer_section(Name:symbol)
-.output  function_pointer_section
+.output function_pointer_section
 
 .decl no_return_function(Name:symbol)
-.output  no_return_function
+.output no_return_function
 
 no_return_call(EA):-
     direct_call(EA,Dest),
     plt_entry(Dest,Function),
     no_return_function(Function).
 
+no_return_call(EA):-
+    direct_call(EA,Dest),
+    defined_symbol(Dest,_,_,_,_,_,_,Name),
+    no_return_function(Name).
+
 .decl is_padding(EA:address)
-.output  is_padding
+.output is_padding
 is_padding(EA):-
     arch.is_nop(EA).
+
+// The functions and data-objects that are intrinsic to the compiler's ABI -
+// artifacts of compilation that are not explicit features of the source and
+// will likely be reintroduced by the compiler toolchain.
+.decl abi_intrinsic(EA:address,Name:symbol)
+.output abi_intrinsic

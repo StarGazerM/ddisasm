@@ -37,28 +37,26 @@ The traversal of used_for_address is kept intra-procedural (not following call e
 
 // register is defined in this location
 .decl def(EA:address,Reg:register)
-.output  def
-
+.output def
 
 // the register 'reg' at address 'ea' is later used in a memory address in 'where'
 // in the operand 'index'
 
 .decl used(EA:address,Reg:register,Index:operand_index)
-.output  used
+.output used
 
 //The 'reg' is defined in 'ea_def' and used in 'ea_used' in the operand with index 'index_used'
 .decl def_used(ea_def:address,reg:register,ea_used:address,index_used:operand_index)
-.output  def_used
 .output def_used
 
 // a register is implicitly defined by being compared to a constant and then jumping
 // this definition only takes place in between the jump and the target that implies equality
 .decl flow_def(EA:address,Reg:register,EA_next:address,Value:number)
-.output  flow_def
+.output flow_def
 //////////////////////////////////////////////////////////////////////////////
 //local underapproximation of control flow
 .decl local_next(ea:address,ea_next:address)
-.output  local_next
+.output local_next
 
 local_next(EA,EA_next):-
     code_in_block(EA,Block),
@@ -66,7 +64,7 @@ local_next(EA,EA_next):-
     code_in_block(EA_next,Block).
 
 .decl inter_procedural_jump(Src:address,Dest:address)
-.output  inter_procedural_jump
+.output inter_procedural_jump
 
 inter_procedural_jump(Src,Dest):-
     unconditional_jump(Src),
@@ -75,7 +73,7 @@ inter_procedural_jump(Src,Dest):-
     code(OtherSrc).
 
 .decl block_next(ea:address,ea_next:address)
-.output  block_next
+.output block_next
 
 
 block_next(EA,Block2):-
@@ -85,8 +83,15 @@ block_next(EA,Block2):-
 
 block_next(EA,EA_next):-
     block_last_instruction(_,EA),
+    !arch.delay_slot(_,EA),
     direct_jump(EA,EA_next),
     !inter_procedural_jump(EA,EA_next).
+
+block_next(EA,EA_next):-
+    block_last_instruction(_,EA),
+    arch.delay_slot(JumpEA,EA),
+    direct_jump(JumpEA,EA_next),
+    !inter_procedural_jump(JumpEA,EA_next).
 
 block_next(EA,EA_next):-
     block_last_instruction(_,EA),
@@ -106,6 +111,14 @@ def(EA,Reg):-
     code(EA),
     instruction_get_operation(EA,Operation),
     arch.call_operation(Operation),
+    !arch.delay_slot(EA,_),
+    arch.function_non_maintained_reg(Reg).
+
+def(EA,Reg):-
+    code(Call),
+    instruction_get_operation(Call,Operation),
+    arch.call_operation(Operation),
+    arch.delay_slot(Call,EA),
     arch.function_non_maintained_reg(Reg).
 
 flow_def(EA_jump,Reg,EA_target,Immediate):-
@@ -126,14 +139,14 @@ flow_def(EA_jump,Reg,EA_target,Immediate):-
     arch.jump_unequal_operation(Operation).
 
 .decl must_def(EA:address,Reg:register)
-.output  must_def
+.output must_def
 
 must_def(EA,Reg):-
     def(EA,Reg),
     !arch.conditional_mov(EA).
 
 .decl defined_in_block(EA:address,Reg:register)
-.output  defined_in_block
+.output defined_in_block
 
 defined_in_block(Block,Reg):-
     def(EA,Reg),
@@ -150,7 +163,7 @@ used(EA,Reg,Index):-
     op_indirect_contains_reg(Op,Reg).
 
 .decl used_in_block(EA:address,Reg:register)
-.output  used_in_block
+.output used_in_block
 
 used_in_block(Block,Reg):-
     used(EA,Reg,_),
@@ -158,7 +171,7 @@ used_in_block(Block,Reg):-
 
 // the last address where a register whas defined within the block
 .decl block_last_def(EA:address,EA_def:address,Reg:register)
-.output  block_last_def
+.output block_last_def
 
 
 
@@ -173,7 +186,7 @@ block_last_def(EA_next,EA_def,Reg):-
 
 // the last address where a register was defined at the basic block level.
 .decl last_def(EA:address,EA_def:address,Reg:register)
-.output  last_def
+.output last_def
 
 last_def(Block,EA,Reg):-
     def(EA,Reg),
@@ -212,7 +225,7 @@ def_used(EA_def,Reg,EA_used,Index):-
 
 
 .decl def_used_for_address(EA_def:address,Reg:register)
-.output  def_used_for_address
+.output def_used_for_address
 
 def_used_for_address(EA_def,Reg):-
     def_used(EA_def,Reg,EA,Index),

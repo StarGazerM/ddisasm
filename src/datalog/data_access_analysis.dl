@@ -43,7 +43,7 @@ other access.
 
 // auxiliary predicate to  compute the amount of read memory
 .decl instruction_memory_access_size(EA:address,Op_index:operand_index,Size:unsigned)
-.output  instruction_memory_access_size
+.output instruction_memory_access_size
 
 instruction_memory_access_size(EA,Index,SizeAccess):-
     code(EA),
@@ -59,7 +59,6 @@ instruction_memory_access_size(EA,Index,SizeAccess):-
 
 //there is a data access at EA in the operand Op_index
 .decl data_access(EA:address,Op_index:operand_index,RegSegment:register,RegBase:register,RegIndex:register,Mult:number,Offset:number,Size:unsigned)
-.output  data_access
 
 data_access(EA,Op_index,RegSegment,RegBase,RegIndex,Mult,Offset,Size):-
     code(EA),
@@ -69,12 +68,12 @@ data_access(EA,Op_index,RegSegment,RegBase,RegIndex,Mult,Offset,Size):-
 
 // the register Reg has the given value at instruction EA and operand Op_index
 .decl value_reg_at_operand(EA:address,Op_index:operand_index,Reg:register,EA_from:address,Mult:number,Offset:number,Type:symbol)
-.output  value_reg_at_operand
+.output value_reg_at_operand
 
 
 // value_reg_at_operand_loop is just used to give priority to "loop" values over other kinds of values
 .decl value_reg_at_operand_loop(EA:address,Op_index:operand_index,Reg:register,EA_from:address,Mult:number,Offset:number,Type:symbol)
-.output  value_reg_at_operand_loop
+.output value_reg_at_operand_loop
 
 
 value_reg_at_operand(EA,Op_index,Reg,EA_from,Mult,BaseAddress,"loop"),
@@ -122,15 +121,12 @@ value_reg_at_operand(EA,Op_index,Reg,0,0,0,"complete"):-
     Reg="NONE".
 
 .decl data_access_pattern(Address:address,Size:unsigned,Multiplier:number,FromWhere:address)
-.output  data_access_pattern
 .output data_access_pattern
 
 .decl data_access_pattern_candidate(Address:address,Size:unsigned,Multiplier:number,FromWhere:address)
-.output  data_access_pattern_candidate
 .output data_access_pattern_candidate
 
 .decl preferred_data_access(ea:address,ea_data_access:address)
-.output  preferred_data_access
 .output preferred_data_access
 
 //////////////////////////////////////////////////
@@ -229,14 +225,14 @@ data_access_pattern(Address,Size,Multiplier,From):-
 // This code takes care of obtaining an ordering in the data_access_patterns
 
 .decl possible_data_limit(EA:address)
-.output  possible_data_limit
+.output possible_data_limit
 
 possible_data_limit(EA):-
     labeled_data_candidate(EA);
     data_segment(_,EA).
 
 .decl last_data_limit(EA:address,Where:address)
-.output  last_data_limit
+.output last_data_limit
 
 last_data_limit(EA+1,EA):-
     possible_data_limit(EA),
@@ -248,7 +244,7 @@ last_data_limit(EA+1,Where):-
     !possible_data_limit(EA).
 
 .decl last_data_access(EA:address,Where:address)
-.output  last_data_access
+.output last_data_access
 
 last_data_access(EA+1,EA):-
     data_access_pattern(EA,_,_,_),
@@ -267,7 +263,7 @@ last_data_access(EA+1,Where):-
 
 
 .decl propagated_data_access(EA:address,Mult:number,EA_ref:address)
-.output  propagated_data_access
+.output propagated_data_access
 
 propagated_data_access(EA,Mult,EA):-
     data_access_pattern(EA,_,Mult,_),
@@ -278,7 +274,7 @@ propagated_data_access(EA,Mult,EA):-
 // FIXME: This predicate has been added to avoid exceptions when mult is 0
 // due to https://github.com/souffle-lang/souffle/issues/1513
 .decl data_access_pattern_non_zero(Address:address,Size:unsigned,Multiplier:number,FromWhere:address)
-.output  data_access_pattern_non_zero
+.output data_access_pattern_non_zero
 
 data_access_pattern_non_zero(Address,Size,Mult,FromWhere):-
     data_access_pattern(Address,Size,Mult,FromWhere), Mult > 0.

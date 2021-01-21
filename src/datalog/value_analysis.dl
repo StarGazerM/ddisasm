@@ -57,15 +57,12 @@ or loop) and considering the value with most steps.
 */
 .decl value_reg_edge(EA:address,Reg:register,
                 EA_reg1:address,Reg1:register,Multiplier:number,Offset:number)
-.output  value_reg_edge
 .output value_reg_edge
 .decl value_reg(EA:address,Reg:register,
                 EA_reg1:address,Reg1:register,Multiplier:number,Offset:number,steps:number)
-.output  value_reg
 .output value_reg
 
 .decl best_value_reg(EA:address,Reg:register,EA_from:address,Multiplier:number,Offset:number,type:symbol)
-.output  best_value_reg
 .output best_value_reg
 
 // mov reg immediate
@@ -75,27 +72,34 @@ value_reg_edge(EA,Reg,EA,"NONE",0,Immediate):-
     op_immediate_and_reg(EA,Operation,Reg,_,Immediate).
 
 .decl reg_stored_in_stack(EA:address,Reg:register,StackPos:number, StackFrameDefinedAt: address)
-.output  reg_stored_in_stack
 .output reg_stored_in_stack
 
 reg_stored_in_stack(EA,Reg,StackPos,StackFrameDefinedAt):-
-    def_used(StackFrameDefinedAt,"RBP",EA,_),
+    (
+        arch.frame_pointer(Base)
+        ;
+        arch.stack_pointer(Base)
+    ),
+    def_used(StackFrameDefinedAt,Base,EA,_),
     arch.mov(EA),
     instruction_get_dest_op(EA,_,DestOp),
-    op_indirect(DestOp,"NONE","RBP","NONE",_,StackPos,_),
+    op_indirect(DestOp,"NONE",Base,"NONE",_,StackPos,_),
     instruction_get_src_op(EA,_,SrcOp),
     op_regdirect_contains_reg(SrcOp,Reg).
 
-
-.decl reg_loaded_from_stack(EA:address,Reg:register,StackPos:number, StackFrameDefinedAt: address)
-.output  reg_loaded_from_stack
+.decl reg_loaded_from_stack(EA:address,Reg:register,Base:register,StackPos:number, StackFrameDefinedAt: address)
 .output reg_loaded_from_stack
 
-reg_loaded_from_stack(EA,Reg,StackPos,StackFrameDefinedAt):-
-    def_used(StackFrameDefinedAt,"RBP",EA,_),
+reg_loaded_from_stack(EA,Reg,Base,StackPos,StackFrameDefinedAt):-
+    (
+        arch.frame_pointer(Base)
+        ;
+        arch.stack_pointer(Base)
+    ),
+    def_used(StackFrameDefinedAt,Base,EA,_),
     arch.mov(EA),
     instruction_get_src_op(EA,_,SrcOp),
-    op_indirect(SrcOp,"NONE","RBP","NONE",_,StackPos,_),
+    op_indirect(SrcOp,"NONE",Base,"NONE",_,StackPos,_),
     instruction_get_dest_op(EA,_,DestOp),
     op_regdirect_contains_reg(DestOp,Reg).
 
@@ -105,7 +109,7 @@ reg_loaded_from_stack(EA,Reg,StackPos,StackFrameDefinedAt):-
 // refer to the same stack frame, identified by the address where RBP is defined.
 value_reg_edge(EALoad,Reg,EAPrev,Reg,1,0):-
     reg_stored_in_stack(EAStore,Reg,StackPos, StackFrameDefinedAt),
-    reg_loaded_from_stack(EALoad,Reg,StackPos, StackFrameDefinedAt),
+    reg_loaded_from_stack(EALoad,Reg,_,StackPos, StackFrameDefinedAt),
     def_used(EAPrev,Reg,EAStore,_).
 
 
@@ -151,6 +155,13 @@ value_reg_edge(EA,Reg,EA,"NONE",0,Address):-
     arch.pc_register(PcReg),
     op_regdirect_contains_reg(Op2,Reg),
     Address = as(EA+Size,number)+Offset.
+
+// GOT-relative LEA. (Note that We drop the GOT Register.)
+value_reg_edge(EA,Reg,EA,"NONE",0,Address):-
+    got_relative_operand(EA,1,Offset),
+    instruction(EA,_,_,"LEA",_,Op2,0,0,_,_),
+    op_regdirect_contains_reg(Op2,Reg),
+    Address = as(Offset,number).
 
 //mov reg reg_origin
 value_reg_edge(EA,Reg,EA_prev,Reg_origin,1,0):-
@@ -253,7 +264,7 @@ value_reg_edge(EA,Reg,EA_prev,Reg_origin,1,Offset):-
 // This predicate is used to create trivial leaf edges in
 // the value_reg graph.
 .decl value_reg_unsupported(EA:address, Reg:register)
-.output  value_reg_unsupported
+.output value_reg_unsupported
 
 // Load a register from a non-constant memory address
 value_reg_unsupported(EA,Reg):-
@@ -284,7 +295,7 @@ value_reg_unsupported(EA,Reg):-
 // instructions we propagate these values forward
 
 .decl step_limit(Limit:number)
-.output  step_limit
+.output step_limit
 
 step_limit(12).
 

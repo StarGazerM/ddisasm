@@ -1,4 +1,4 @@
-//===- jump_operations.dl -----------------------------------*- datalog -*-===//
+//===- arch_x86_64.dl ---------------------------------------*- datalog -*-===//
 //
 //  Copyright (C) 2019 GrammaTech, Inc.
 //
@@ -20,46 +20,27 @@
 //  endorsement should be inferred.
 //
 //===----------------------------------------------------------------------===//
-/**
-The set of jump operations in x64
-*/
-.decl jump_operation(n:symbol)
-.decl unconditional_jump_operation(n:symbol)
+#include "arch_x86.dl"
 
-.decl jump_equal_operation(n:symbol)
-.decl jump_unequal_operation(n:symbol)
+.comp X86_64 : X86 {
+  #include "registers_x86_64.dl"
+  pointer_size(8).
+}
 
-jump_operation("JCXZ").
-jump_operation("JECXZ").
-jump_operation("JRCXZ").
-jump_operation("JO").
-jump_operation("JNO").
-jump_operation("JB").
-jump_operation("JNB").
-jump_operation("JZ").
-jump_operation("JNZ").
-jump_operation("JNA").
-jump_operation("JA").
-jump_operation("JS").
-jump_operation("JNS").
-jump_operation("JP").
-jump_operation("JNP").
-jump_operation("JL").
-jump_operation("JGE").
-jump_operation("JLE").
-jump_operation("JG").
-jump_operation("JC").
-jump_operation("JAE").
-jump_operation("JE").
-jump_operation("JNE").
-jump_operation("JBE").
-jump_operation("JNBE").
-jump_operation("JMP").
+symbolic_operand_attribute(EA,Index,"PltRef"):-
+    symbolic_operand(EA,Index,Dest,_),
+    plt_block(Dest,_).
 
-unconditional_jump_operation("JMP").
+symbolic_operand_attribute(EA,Index,"GotRelPC"):-
+    symbolic_operand(EA,Index,Dest,_),
+    !moved_label(EA,Index,_,_),
+    got_reference(Dest,_).
 
-jump_equal_operation("JE").
-jump_equal_operation("JZ").
+symbolic_operand_attribute(EA,Index,"GotRelPC"):-
+    symbolic_operand(EA,Index,Dest,_),
+    got_local_reference(Dest,_).
 
-jump_unequal_operation("JNE").
-jump_unequal_operation("JNZ").
+symbolic_operand_attribute(EA,Index,"TpOff"):-
+    symbolic_operand(EA,Index,Dest,_),
+    tls_segment(Start,End,_),
+    Dest >= Start, Dest < End.

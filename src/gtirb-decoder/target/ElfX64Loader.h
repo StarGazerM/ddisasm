@@ -32,11 +32,12 @@
 
 CompositeLoader ElfX64Loader()
 {
-    CompositeLoader Loader("souffle_disasm_x64");
+    CompositeLoader Loader("souffle_disasm_x86_64");
     Loader.add(ModuleLoader);
     Loader.add(SectionLoader);
     Loader.add<X64Loader>();
     Loader.add<DataLoader>(DataLoader::Pointer::QWORD);
+    Loader.add(ElfDynamicEntryLoader);
     Loader.add(ElfSymbolLoader);
     Loader.add(ElfExceptionLoader);
     return Loader;
