@@ -101,7 +101,7 @@ class DatalogLib:
                     #     need_insert_name = None
                     else:
                         is_out = False
-                        if re.findall(r'\.output +'+need_insert_name, full_text) != []:
+                        if re.findall(r'\.output +'+need_insert_name+' *\n', full_text) != []:
                             print('.output '+need_insert_name)
                             is_out = True
                         else:

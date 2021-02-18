@@ -380,6 +380,7 @@ string_part(EA+1,Base):-
 .output discarded_data_object
 
 .decl data_object(ea:address,size:unsigned,type:symbol)
+.output data_object
 
 data_object_candidate(EA,Size,"symbol-symbol"):-
     symbol_minus_symbol_jump_table(EA,_,Size,_,_,_,_).

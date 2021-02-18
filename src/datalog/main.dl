@@ -118,6 +118,7 @@ This module:
 .input base_address
 
 .decl symbol(ea:address,size:unsigned,type:symbol,scope:symbol,sectionIndex:unsigned, originTable:symbol,tableIndex:unsigned,name:symbol)
+.output symbol
 .input symbol
 
 .decl section_complete(name:symbol,size:unsigned,addr:address,type:unsigned,flags:unsigned,align:unsigned)
@@ -153,6 +154,7 @@ This module:
 .decl instruction(ea:address, size:unsigned, prefix:symbol, opcode:symbol,
           op1:operand_code, op2:operand_code, op3:operand_code, op4:operand_code,
           immOffset:unsigned,displacementOffset:unsigned)
+.output instruction
 .input instruction
 
 .decl invalid_op_code(ea:address)
